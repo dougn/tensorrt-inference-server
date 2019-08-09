@@ -333,8 +333,12 @@ class TrtServerRequestProvider {
   const std::shared_ptr<ni::InferenceBackend>& Backend() const;
   const std::unordered_map<std::string, std::shared_ptr<ni::SystemMemory>>&
   InputMap() const;
+  const std::unordered_map<std::string, std::shared_ptr<ni::SystemMemory>>&
+  OutputShmMap() const;
 
   void SetInputData(const char* input_name, const void* base, size_t byte_size);
+  void SetSharedMemoryOutputBuffer(
+      const char* output_name, const void* base, size_t byte_size);
 
  private:
   const std::string model_name_;
@@ -666,6 +670,16 @@ TRTSERVER_InferenceRequestProviderSetInputData(
   return nullptr;  // Success
 }
 
+TRTSERVER_Error*
+TRTSERVER_InferenceRequestProviderSetSharedMemoryOutputBuffer(
+    TRTSERVER_InferenceRequestProvider* request_provider,
+    const char* output_name, const void* base, size_t byte_size)
+{
+  TrtServerRequestProvider* lprovider =
+      reinterpret_cast<TrtServerRequestProvider*>(request_provider);
+  lprovider->SetSharedMemoryOutputBuffer(output_name, base, byte_size);
+  return nullptr;  // Success
+}
 //
 // TRTSERVER_InferenceResponse
 //
