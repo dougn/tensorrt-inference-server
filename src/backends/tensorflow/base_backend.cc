@@ -388,6 +388,7 @@ ReadFixedSizedOutputTensor(
       void* content = nullptr;
       Status status = payload.response_provider_->AllocateOutputBuffer(
           output_name, &content, expected_byte_size, shape);
+      LOG_VERBOSE(1) << "Allocated Output Buffer";
       if (!status.IsOk()) {
         payload.status_ = status;
       } else {
