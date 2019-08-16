@@ -858,12 +858,16 @@ DelegatingInferResponseProvider::AllocateOutputBuffer(
   // For cls result, the preferred memory type must be CPU
   // return success and nullptr to align with the behavior of
   // 'TRTSERVER_ResponseAllocatorAllocFn_t'
-  if (pr->second.has_cls() && (preferred_memory_type == TRTSERVER_MEMORY_CPU)) {
+  if (pr->second.has_cls()) {
+    if (preferred_memory_type == TRTSERVER_MEMORY_CPU) {
       loutput->cls_count_ = pr->second.cls().count();
       char* buffer = new char[content_byte_size];
       *content = static_cast<void*>(buffer);
       loutput->ptr_ = static_cast<void*>(buffer);
       loutput->buffer_.reset(buffer);
+    } else {
+      return Status::Success;
+    }
   }
 
 
