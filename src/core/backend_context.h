@@ -47,7 +47,7 @@ struct BackendContext {
   BackendContext(
       const std::string& name, const int gpu_device, const int max_batch_size);
 
-  virtual ~BackendContext() = default;
+  virtual ~BackendContext();
 
   // Helper function to batch input data from payloads into 'input_buffer'.
   // 'input_buffer' must be a continuous block that can hold the sum of

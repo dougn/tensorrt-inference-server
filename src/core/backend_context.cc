@@ -27,6 +27,7 @@
 #include "src/core/backend_context.h"
 
 #include "src/core/provider.h"
+#include "src/core/logging.h"
 
 namespace nvidia { namespace inferenceserver {
 
@@ -34,6 +35,22 @@ BackendContext::BackendContext(
     const std::string& name, const int gpu_device, const int max_batch_size)
     : name_(name), gpu_device_(gpu_device), max_batch_size_(max_batch_size)
 {
+#ifdef TRTIS_ENABLE_GPU
+  stream_ = nullptr;
+#endif  // TRTIS_ENABLE_GPU
+}
+
+BackendContext::~BackendContext()
+{
+#ifdef TRTIS_ENABLE_GPU
+  if (stream_ != nullptr) {
+    cudaError_t err = cudaStreamDestroy(stream_);
+    if (err != cudaSuccess) {
+      LOG_ERROR << "Failed to destroy cuda stream: " << cudaGetErrorString(err);
+    }
+    stream_ = nullptr;
+  }
+#endif  // TRTIS_ENABLE_GPU
 }
 
 bool
@@ -180,7 +197,6 @@ BackendContext::SetFixedSizeOutputBuffer(
           memcpy(buffer, content + content_offset, expected_byte_size);
         } else {
 #ifdef TRTIS_ENABLE_GPU
-          cuda_copy = true;
           // [TODO] use cudaMemcpyDefault if UVM is supported for the device
           auto copy_kind = cudaMemcpyDeviceToDevice;
           if (src_memory_type == TRTSERVER_MEMORY_CPU) {
@@ -196,13 +212,15 @@ BackendContext::SetFixedSizeOutputBuffer(
                 RequestStatusCode::INTERNAL,
                 "failed to use CUDA copy for output '" + name +
                     "': " + std::string(cudaGetErrorString(err)));
+          } else {
+            cuda_copy = true;
+          }
 #else
           payload.status_ = Status(
               RequestStatusCode::INTERNAL,
               "try to use CUDA copy for output '" + name +
                   "' while GPU is not supported"));
 #endif  // TRTIS_ENABLE_GPU
-          }
         }
       } else {
         payload.status_ = status;

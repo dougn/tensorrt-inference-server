@@ -235,6 +235,12 @@ LibTorchBackend::CreateExecutionContext(
     context->device_ = torch::Device(torch::kCPU);
   } else {
     context->device_ = torch::Device(torch::kCUDA, gpu_device);
+    auto cuerr = cudaStreamCreate(&context->stream_);
+    if (cuerr != cudaSuccess) {
+      return Status(
+          RequestStatusCode::INTERNAL, "unable to create stream for " + Name() +
+                                          ": " + cudaGetErrorString(cuerr));
+    }
   }
 
   try {
