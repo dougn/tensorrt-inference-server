@@ -459,8 +459,11 @@ CustomBackend::Context::GetNextInput(
   const std::string name(cname);
   Scheduler::Payload* payload = input_context->payload_;
 
+  // [TODO] fix this to handle case where memory type is on GPU
+  // need to move that to CPU to ensure backward capability
+  TRTSERVER_Memory_Type src_memory_type;
   Status status = payload->request_provider_->GetNextInputContent(
-      name, content, content_byte_size, false);
+      name, content, content_byte_size, &src_memory_type, false);
   return status.IsOk();
 }
 

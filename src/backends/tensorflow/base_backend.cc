@@ -295,10 +295,13 @@ SetStringInputTensor(
         request_header.batch_size() * batch1_element_cnt;
     size_t element_idx = 0;
 
+    // [TODO] fix this to handle case where memory type is on GPU
+    // [TODO] move SetStringInputTensor function to base class?
+    TRTSERVER_Memory_Type src_memory_type;
     const void* vcontent;
     size_t content_byte_size = expected_element_cnt * sizeof(uint32_t);
     payload.status_ = payload.request_provider_->GetNextInputContent(
-        input_name, &vcontent, &content_byte_size, true);
+        input_name, &vcontent, &content_byte_size, &src_memory_type, true);
     if (!payload.status_.IsOk()) {
       FillStringTensor(
           tensor, tensor_element_idx + element_idx,
