@@ -565,7 +565,8 @@ GrpcRequestImpl::InitResult(
     result->SetBatchnByteSize(output.raw().batch_byte_size());
   }
 
-  if ((result->ResultFormat() == InferContext::Result::ResultFormat::RAW) && (!result->UsesSharedMemory())) {
+  if ((result->ResultFormat() == InferContext::Result::ResultFormat::RAW) &&
+      (!result->UsesSharedMemory())) {
     if (grpc_response_->raw_output_size() <= (int)idx) {
       return Error(
           RequestStatusCode::INVALID,
@@ -629,6 +630,12 @@ GrpcRequestImpl::GetResults(
 
     std::unique_ptr<GrpcResultImpl> result(
         new GrpcResultImpl(grpc_response_, infer_output));
+    if (!ctx.UsesSharedMemory(output.name())) {
+      result->SetUsesSharedMemory(false);
+    } else {
+      result->SetUsesSharedMemory(true);
+    }
+
     err = InitResult(infer_output, output, idx, result.get());
 
     if (!err.IsOk()) {
