@@ -58,6 +58,11 @@ function main() {
       "${WHLDIR}/tensorrtserver/api/."
     cp ../c++/librequest.so \
       "${WHLDIR}/tensorrtserver/api/."
+  elif [ $(uname -s) == "Darwin" ]; then
+    cp libcrequest.dylib \
+      "${WHLDIR}/tensorrtserver/api/."
+    cp ../c++/librequest.dylib \
+      "${WHLDIR}/tensorrtserver/api/."
   else
     cp Release/crequest.dll \
       "${WHLDIR}/tensorrtserver/api/."
@@ -73,9 +78,9 @@ function main() {
 
   # Use 'sed' command to fix protoc compiled imports (see
   # https://github.com/google/protobuf/issues/1491).
-	sed -i "s/^import \([^ ]*\)_pb2 as \([^ ]*\)$/from tensorrtserver.api import \1_pb2 as \2/" \
+	sed -i.bk "s/^import \([^ ]*\)_pb2 as \([^ ]*\)$/from tensorrtserver.api import \1_pb2 as \2/" \
     ${WHLDIR}/tensorrtserver/api/*_pb2.py
-	sed -i "s/^import \([^ ]*\)_pb2 as \([^ ]*\)$/from tensorrtserver.api import \1_pb2 as \2/" \
+	sed -i.bk "s/^import \([^ ]*\)_pb2 as \([^ ]*\)$/from tensorrtserver.api import \1_pb2 as \2/" \
     ${WHLDIR}/tensorrtserver/api/*_pb2_grpc.py
 
   pushd "${WHLDIR}"

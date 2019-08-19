@@ -24,6 +24,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+libtool -static -o libcustombackend.a libcustombackendparts.a libcustombackendprotobuf.a
+else
 ar -M <<EOF
 create libcustombackend.a
 addlib libcustombackendparts.a
@@ -31,3 +34,4 @@ addlib libcustombackendprotobuf.a
 save
 end
 EOF
+fi

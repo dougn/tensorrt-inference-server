@@ -48,8 +48,10 @@ class _utf8(object):
             return value.encode('utf8')
 
 import os
-_request_lib = "request" if os.name == 'nt' else 'librequest.so'
-_crequest_lib = "crequest" if os.name == 'nt' else 'libcrequest.so'
+import sys
+ext = '.dylib' if sys.platform == 'darwin' else '.so'
+_request_lib = "request" if os.name == 'nt' else 'librequest' + ext
+_crequest_lib = "crequest" if os.name == 'nt' else 'libcrequest' + ext
 _request_path = pkg_resources.resource_filename('tensorrtserver.api', _request_lib)
 _request = cdll.LoadLibrary(_request_path)
 _crequest_path = pkg_resources.resource_filename('tensorrtserver.api', _crequest_lib)

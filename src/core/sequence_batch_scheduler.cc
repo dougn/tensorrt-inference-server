@@ -35,6 +35,9 @@
 #include "src/core/model_config_utils.h"
 #include "src/core/provider.h"
 #include "src/core/server_status.h"
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+#include <pthread.h>
+#endif
 
 namespace nvidia { namespace inferenceserver {
 
@@ -473,7 +476,13 @@ SequenceBatchScheduler::DelayScheduler(
 void
 SequenceBatchScheduler::ReaperThread(const int nice)
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+  uint64_t tid64;
+  pthread_threadid_np(NULL, &tid64);
+  if (setpriority(PRIO_PROCESS, (pid_t)tid64, nice) == 0) {
+#else
   if (setpriority(PRIO_PROCESS, syscall(SYS_gettid), nice) == 0) {
+#endif
     LOG_VERBOSE(1) << "Starting sequence-batch reaper thread at nice " << nice
                    << "...";
   } else {
@@ -653,7 +662,13 @@ void
 SequenceBatchScheduler::SequenceBatch::SchedulerThread(
     const int nice, std::promise<bool>* is_initialized)
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+  uint64_t tid64;
+  pthread_threadid_np(NULL, &tid64);
+  if (setpriority(PRIO_PROCESS, (pid_t)tid64, nice) == 0) {
+#else
   if (setpriority(PRIO_PROCESS, syscall(SYS_gettid), nice) == 0) {
+#endif
     LOG_VERBOSE(1) << "Starting sequence-batch scheduler thread "
                    << batcher_idx_ << " at nice " << nice << "...";
   } else {

@@ -41,6 +41,14 @@
 // configuration.
 //
 
+#if CV_MAJOR_VERSION == 4
+#define CV_GRAY2RGB  cv::COLOR_GRAY2RGB
+#define CV_BGR2GRAY  cv::COLOR_BGR2GRAY
+#define CV_BGR2RGB   cv::COLOR_BGR2RGB
+#define CV_BGRA2RGB  cv::COLOR_BGRA2RGB
+#define CV_BGRA2GRAY cv::COLOR_BGRA2GRAY
+#endif
+
 namespace nvidia { namespace inferenceserver { namespace custom {
 namespace image_preprocess {
 

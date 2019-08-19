@@ -734,7 +734,8 @@ InferContextResultClassCount(
         "no classes available for empty result");
   }
 
-  nic::Error err = ctx->result->GetClassCount(batch_idx, count);
+  size_t scount = *count;
+  nic::Error err = ctx->result->GetClassCount(batch_idx, &scount);
   return new nic::Error(err);
 }
 

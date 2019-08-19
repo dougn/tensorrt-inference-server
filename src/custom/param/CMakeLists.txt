@@ -39,10 +39,12 @@ set_target_properties(
   param
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libparam.ldscript
 )
+if(NOT APPLE)
 set_target_properties(
   param
   PROPERTIES LINK_FLAGS "-Wl,--version-script libparam.ldscript"
 )
+endif()
 target_link_libraries(
   param
   PRIVATE custombackend

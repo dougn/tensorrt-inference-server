@@ -104,8 +104,9 @@ if(${TRTIS_ENABLE_HTTP} OR ${TRTIS_ENABLE_METRICS})
     PRIVATE ${LIBEVENT_LIBRARIES}
     PRIVATE libevhtp::evhtp
     PRIVATE protobuf::libprotobuf
-    PRIVATE -lre2
   )
+      #PRIVATE ${LIBRARY_OUTPUT_DIRECTORY}/grpc/lib/libre2.a 
+
 endif() # TRTIS_ENABLE_HTTP || TRTIS_ENABLE_METRICS
 
 #
@@ -133,6 +134,7 @@ target_link_libraries(
   main
   ${HTTP_ENDPOINT_LIBRARIES}
   ${GRPC_ENDPOINT_LIBRARIES}
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../builddir/grpc/lib/libre2.a
   PRIVATE trtserver
 )
 install(
@@ -211,10 +213,12 @@ set_target_properties(
   trtserver
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libtrtserver.ldscript
 )
+if(NOT APPLE)
 set_target_properties(
   trtserver
   PROPERTIES LINK_FLAGS "-Wl,--version-script libtrtserver.ldscript"
 )
+endif()
 target_link_libraries(
   trtserver
   PRIVATE ${TRTIS_EXTRA_LDFLAGS}

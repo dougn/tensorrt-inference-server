@@ -459,8 +459,9 @@ CustomBackend::Context::GetNextInput(
   const std::string name(cname);
   Scheduler::Payload* payload = input_context->payload_;
 
+  size_t cbs = *content_byte_size;
   Status status = payload->request_provider_->GetNextInputContent(
-      name, content, content_byte_size, false);
+      name, content, &cbs, false);
   return status.IsOk();
 }
 

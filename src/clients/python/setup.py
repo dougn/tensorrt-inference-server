@@ -25,6 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import sys
 from setuptools import find_packages
 from setuptools import setup, dist
 
@@ -56,6 +57,8 @@ except ImportError:
 
 if os.name == 'nt':
     platform_package_data = [ 'crequest.dll', 'request.dll', ]
+elif sys.platform == 'darwin':
+    platform_package_data = [ 'libcrequest.dylib', 'librequest.dylib', ]
 else:
     platform_package_data = [ 'libcrequest.so', 'librequest.so', ]
 

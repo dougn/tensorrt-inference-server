@@ -40,6 +40,8 @@ class AutoFill {
       const std::string& model_path, const ModelConfig& config,
       std::unique_ptr<AutoFill>* autofill);
 
+  virtual ~AutoFill() = default;
+
   /// Autofill settings in a configuration.
   virtual Status Fix(ModelConfig* config) = 0;
 

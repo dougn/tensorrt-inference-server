@@ -120,6 +120,8 @@ Send(
   return r;
 }
 
+#pragma clang diagnostic ignored "-Wpessimizing-move"
+
 std::shared_ptr<nic::InferContext::Request>
 AsyncSend(
     const std::unique_ptr<nic::InferContext>& ctx, int32_t value,

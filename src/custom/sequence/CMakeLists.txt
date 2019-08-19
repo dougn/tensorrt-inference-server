@@ -39,10 +39,12 @@ set_target_properties(
   sequence
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libsequence.ldscript
 )
+if(NOT APPLE)
 set_target_properties(
   sequence
   PROPERTIES LINK_FLAGS "-Wl,--version-script libsequence.ldscript"
 )
+endif()
 target_link_libraries(
   sequence
   PRIVATE custombackend

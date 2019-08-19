@@ -1249,6 +1249,7 @@ InferHttpContextImpl::InferHttpContextImpl(
   if (model_version >= 0) {
     url_ += "/" + std::to_string(model_version);
   }
+  curl_=NULL;
 }
 
 InferHttpContextImpl::~InferHttpContextImpl()

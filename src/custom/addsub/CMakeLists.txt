@@ -52,10 +52,12 @@ set_target_properties(
   addsub
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libaddsub.ldscript
 )
+if(NOT APPLE)
 set_target_properties(
   addsub
   PROPERTIES LINK_FLAGS "-Wl,--version-script libaddsub.ldscript"
 )
+endif()
 target_link_libraries(
   addsub
   PRIVATE custombackend

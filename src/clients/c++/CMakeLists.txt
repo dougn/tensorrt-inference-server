@@ -156,11 +156,15 @@ install(
 #
 # simple_shm_client
 #
+if(${TRTIS_ENABLE_GPU})
+set(RT, rt)
+endif()
+
 add_executable(simple_shm_client simple_shm_client.cc)
 target_link_libraries(
   simple_shm_client
   PRIVATE request
-  rt
+  ${RT}
 )
 install(
   TARGETS simple_shm_client

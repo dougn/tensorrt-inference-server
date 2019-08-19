@@ -42,10 +42,12 @@ set_target_properties(
   imagepreprocess
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libimage_preprocess.ldscript
 )
+if(NOT APPLE)
 set_target_properties(
   imagepreprocess
   PROPERTIES LINK_FLAGS "-Wl,--version-script libimage_preprocess.ldscript"
 )
+endif()
 target_link_libraries(
   imagepreprocess
   PRIVATE custombackend

@@ -269,7 +269,9 @@ ProfileGrpcContextImpl::SendCommand(const std::string& cmd_str)
   ProfileRequest request;
   ProfileResponse response;
   grpc::ClientContext context;
-
+  if (verbose_) {
+    std::cout << "SendCommand: " << cmd_str << std::endl;
+  }
   request.set_cmd(cmd_str);
   grpc::Status status = stub_->Profile(&context, request, &response);
   if (status.ok()) {
@@ -336,7 +338,9 @@ ModelControlGrpcContextImpl::SendRequest(
   ModelControlRequest request;
   ModelControlResponse response;
   grpc::ClientContext context;
-
+  if (verbose_) { 
+    std::cout << "SendRequest: " << model_name << std::endl;
+  } 
   request.set_model_name(model_name);
   if (is_load) {
     request.set_type(ModelControlRequest::LOAD);
@@ -424,7 +428,9 @@ SharedMemoryControlGrpcContextImpl::SendRequest(
   SharedMemoryControlRequest request;
   SharedMemoryControlResponse response;
   grpc::ClientContext context;
-
+  if (verbose_) { 
+    std::cout << "SendRequest: " << name << std::endl;
+  }   
   if (action == SharedMemoryControlRequest::REGISTER) {
     auto rshm_region = request.mutable_shared_memory_region();
     rshm_region->set_name(name);

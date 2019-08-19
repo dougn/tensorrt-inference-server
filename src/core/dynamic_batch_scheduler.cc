@@ -36,6 +36,9 @@
 #include "src/core/model_config.h"
 #include "src/core/provider.h"
 #include "src/core/server_status.h"
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+#include <pthread.h>
+#endif
 
 namespace nvidia { namespace inferenceserver {
 
@@ -161,7 +164,13 @@ DynamicBatchScheduler::SchedulerThread(
     const uint32_t runner_id, const int nice,
     std::promise<bool>* is_initialized)
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+  uint64_t tid64;
+  pthread_threadid_np(NULL, &tid64);
+  if (setpriority(PRIO_PROCESS, (pid_t)tid64, nice) == 0) {
+#else
   if (setpriority(PRIO_PROCESS, syscall(SYS_gettid), nice) == 0) {
+#endif
     LOG_VERBOSE(1) << "Starting dynamic-batch scheduler thread " << runner_id
                    << " at nice " << nice << "...";
   } else {

@@ -901,7 +901,7 @@ InferContextImpl::SetRunOptions(const InferContext::Options& boptions)
 
   // If batch-size 0 was requested (no batching) treat it like
   // batch-size 1.
-  batch_size_ = std::max((uint64_t)1, options.BatchSize());
+  batch_size_ = std::max((uint64_t)1, (uint64_t)options.BatchSize());
 
   // Create the InferRequestHeader protobuf. This protobuf will be
   // used for all subsequent requests.

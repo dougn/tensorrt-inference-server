@@ -292,6 +292,8 @@ InferenceServer::IsReady(bool* ready)
   return Status::Success;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
 void
 InferenceServer::Infer(
     const std::shared_ptr<InferenceBackend>& backend,
@@ -324,6 +326,7 @@ InferenceServer::Infer(
   backend->Run(
       infer_stats, request_provider, response_provider, OnCompleteHandleInfer);
 }
+#pragma clang diagnostic pop
 
 Status
 InferenceServer::GetStatus(

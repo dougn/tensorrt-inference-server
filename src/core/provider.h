@@ -42,6 +42,8 @@ class LabelProvider;
 //
 class SystemMemory {
  public:
+  virtual ~SystemMemory() = default;
+
   // Get the 'idx'-th data block in the buffer. Using index to avoid
   // maintaining internal state such that one buffer can be shared
   // across multiple providers.
@@ -63,6 +65,7 @@ class SystemMemoryReference : public SystemMemory {
  public:
   // Create a read-only data buffer as a reference to other data buffer
   SystemMemoryReference();
+  virtual ~SystemMemoryReference() = default;
 
   //\see SystemMemory::BufferAt()
   const char* BufferAt(size_t idx, size_t* byte_size) const override;
@@ -80,6 +83,7 @@ class AllocatedSystemMemory : public SystemMemory {
  public:
   // Create a continuous data buffer with 'byte_size'.
   AllocatedSystemMemory(size_t byte_size);
+  virtual ~AllocatedSystemMemory() = default;
 
   //\see SystemMemory::BufferAt()
   const char* BufferAt(size_t idx, size_t* byte_size) const override;
@@ -104,6 +108,8 @@ class InferRequestProvider {
       const std::unordered_map<std::string, std::shared_ptr<SystemMemory>>&
           input_buffer,
       std::shared_ptr<InferRequestProvider>* provider);
+
+  virtual ~InferRequestProvider() = default;
 
   // Return the requested model name.
   const std::string& ModelName() const { return model_name_; }
@@ -414,7 +420,7 @@ class DelegatingInferResponseProvider : public InferResponseProvider {
       TRTSERVER_ResponseAllocatorReleaseFn_t release_fn,
       std::shared_ptr<DelegatingInferResponseProvider>* infer_provider);
 
-  ~DelegatingInferResponseProvider();
+  virtual ~DelegatingInferResponseProvider();
 
   const InferResponseHeader& ResponseHeader() const override;
   InferResponseHeader* MutableResponseHeader() override;

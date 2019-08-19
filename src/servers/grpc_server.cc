@@ -320,7 +320,8 @@ class InferBaseContext : public BaseContext<LifeCycle, AsyncResources> {
           request_id_(request_id), server_id_(server_id), unique_id_(unique_id)
     {
     }
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
     static void InferComplete(
         TRTSERVER_Server* server, TRTSERVER_InferenceResponse* response,
         void* userp)
@@ -386,6 +387,7 @@ class InferBaseContext : public BaseContext<LifeCycle, AsyncResources> {
       grpc_infer_request->ctx_->CompleteExecution(
           grpc_infer_request->exec_ctx_);
     }
+#pragma clang diagnostic pop
 
    private:
     InferBaseContext<LifeCycle>* ctx_;
@@ -536,7 +538,8 @@ class StreamInferContext final
     : public InferBaseContext<
           BidirectionalStreamingLifeCycle<InferRequest, InferResponse>> {
 };
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
 class ProfileContext final
     : public Context<ProfileRequest, ProfileResponse, AsyncResources> {
   void ExecuteRPC(
@@ -546,7 +549,6 @@ class ProfileContext final
     GetResources()->GetMgmtThreadPool().enqueue([this, execution_context,
                                                  &request, &response] {
       // For now profile is a nop...
-
       RequestStatusUtil::Create(
           response.mutable_request_status(), nullptr /* err */,
           RequestStatusUtil::NextUniqueRequestId(), GetResources()->ServerId());
@@ -555,6 +557,7 @@ class ProfileContext final
     });
   }
 };
+#pragma clang diagnostic pop
 
 class HealthContext final
     : public Context<HealthRequest, HealthResponse, AsyncResources> {
