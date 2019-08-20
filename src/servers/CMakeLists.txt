@@ -202,7 +202,7 @@ endif() # TRTIS_ENABLE_GPU
 configure_file(libtrtserver.ldscript libtrtserver.ldscript COPYONLY)
 
 add_library(
-  trtserver SHARED
+  trtserver STATIC
   $<TARGET_OBJECTS:server-library>
   $<TARGET_OBJECTS:model-config-library>
   $<TARGET_OBJECTS:proto-library>
