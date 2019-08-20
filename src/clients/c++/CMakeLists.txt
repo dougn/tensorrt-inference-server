@@ -156,7 +156,7 @@ install(
 #
 # simple_shm_client
 #
-if(${TRTIS_ENABLE_GPU})
+if(NOT APPLE)
 set(RT, rt)
 endif()
 
