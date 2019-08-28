@@ -226,11 +226,12 @@ set_target_properties(
   trtserver
   PROPERTIES LINK_FLAGS "-Wl,--version-script libtrtserver.ldscript"
 )
+set(RT -lrt)
 endif()
 target_link_libraries(
   trtserver
   PRIVATE -ldl
-  PRIVATE -lrt
+  PRIVATE ${RT}
   PRIVATE ${TRTIS_EXTRA_LDFLAGS}
   PRIVATE protobuf::libprotobuf
 )

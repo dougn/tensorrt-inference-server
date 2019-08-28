@@ -46,10 +46,12 @@ set_target_properties(
   request
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/librequest.ldscript
 )
+if (NOT APPLE)
 set_target_properties(
   request
   PROPERTIES LINK_FLAGS "-Wl,--version-script=librequest.ldscript"
 )
+endif()
 
 target_link_libraries(
   request

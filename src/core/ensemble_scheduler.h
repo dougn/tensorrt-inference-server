@@ -70,6 +70,10 @@ struct EnsembleInfo {
   std::unordered_map<std::string, std::set<size_t>> tensor_to_step_;
 };
 
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+
 // Scheduler that implements ensemble scheduling.
 class EnsembleScheduler : public Scheduler {
  public:
@@ -99,5 +103,8 @@ class EnsembleScheduler : public Scheduler {
   // The stream used for data transfer.
   cudaStream_t stream_;
 };
+
+#pragma clang diagnostic pop
+
 
 }}  // namespace nvidia::inferenceserver
