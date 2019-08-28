@@ -23,35 +23,10 @@
 # OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-cmake_minimum_required (VERSION 3.5)
-
-#
-# nvrpc
-#
-set(
-  NVRPC_SRCS
-  Executor.cc
-  Server.cc
-  ThreadPool.cc
-)
-
-set(
-  NVRPC_HDRS
-  BidirectionalStreamingLifeCycle.h
-  Context.h
-  Executor.h
-  Interfaces.h
-  LifeCycleUnary.h
-  Resources.h
-  RPC.h
-  Server.h
-  Service.h
-  ThreadPool.h
-  future_std.h
-)
-
-add_library(
-  nvrpc-library EXCLUDE_FROM_ALL OBJECT
-  ${NVRPC_SRCS} ${NVRPC_HDRS}
-)
+{
+  global:
+    extern "C++" {
+      nvidia::inferenceserver*
+    };
+  local: *;
+};

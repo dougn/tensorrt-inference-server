@@ -299,7 +299,7 @@ SetStringInputTensor(
 
     // For string data type, we always need to copy the data to CPU so that
     // we can read string length and construct the string properly.
-    TRTSERVER_Memory_Type src_memory_type;
+    auto src_memory_type = TRTSERVER_MEMORY_CPU;
     const void* vcontent;
     size_t content_byte_size = expected_element_cnt * sizeof(uint32_t);
     payload.status_ = payload.request_provider_->GetNextInputContent(
@@ -740,7 +740,8 @@ BaseBackend::Context::Run(
                 std::to_string(batch1_byte_size));
       }
       ReadFixedSizedOutputTensor(
-          output_tensor, name, shapevec, batch1_byte_size, payloads, &cuda_copy);
+          output_tensor, name, shapevec, batch1_byte_size, payloads,
+          &cuda_copy);
     } else {
       ReadStringOutputTensor(
           output_tensor, name, shapevec, batch1_element_cnt, payloads);
