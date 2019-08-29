@@ -27,21 +27,75 @@
 cmake_minimum_required (VERSION 3.5)
 
 #
-# librequest.so
+# librequest.so and librequest_static.a
 #
 find_package(CURL REQUIRED)
 
 configure_file(librequest.ldscript librequest.ldscript COPYONLY)
 
+# Headers with include paths adjusted to reflect that all headers are
+# in the same directory. These headers are used in the install.
+set(TRTIS_CLIENT_HEADER_FLAT 1)
+configure_file(request.h.in flat_include/request.h @ONLY)
+configure_file(request_grpc.h.in flat_include/request_grpc.h @ONLY)
+configure_file(request_http.h.in flat_include/request_http.h @ONLY)
+
+# Headers with full include paths needed for build.
+set(TRTIS_CLIENT_HEADER_FLAT 0)
+configure_file(request.h.in request.h @ONLY)
+configure_file(request_grpc.h.in request_grpc.h @ONLY)
+configure_file(request_http.h.in request_http.h @ONLY)
+
+set(
+  REQUEST_SRCS
+  request.cc request_common.cc request_http.cc request_grpc.cc
+)
+
+set(
+  REQUEST_HDRS
+  request.h request_common.h
+)
+
 add_library(
-  request SHARED
-  request.cc request.h
-  request_common.cc request_common.h
-  request_http.cc request_grpc.cc
+  request-library EXCLUDE_FROM_ALL OBJECT
+  ${REQUEST_SRCS} ${REQUEST_HDRS}
+)
+add_dependencies(
+  request-library
+  model-config-library grpc-library proto-library
+)
+
+# librequest_static.a
+add_library(
+  request_static STATIC
+  $<TARGET_OBJECTS:grpc-library>
   $<TARGET_OBJECTS:model-config-library>
   $<TARGET_OBJECTS:proto-library>
-  $<TARGET_OBJECTS:grpc-library>
+  $<TARGET_OBJECTS:request-library>
 )
+target_link_libraries(
+  request_static
+  PRIVATE gRPC::grpc++
+  PRIVATE gRPC::grpc
+  PUBLIC protobuf::libprotobuf
+  PUBLIC ${CURL_LIBRARY}
+)
+if(NOT WIN32)
+  target_link_libraries(
+    request_static
+    PUBLIC -lpthread
+  )
+endif()
+
+# librequest.so
+add_library(
+  request SHARED
+  $<TARGET_OBJECTS:grpc-library>
+  $<TARGET_OBJECTS:model-config-library>
+  $<TARGET_OBJECTS:proto-library>
+  $<TARGET_OBJECTS:request-library>
+)
+target_include_directories(request PRIVATE ${CURL_INCLUDE_DIRS})
 set_target_properties(
   request
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/librequest.ldscript
@@ -60,22 +114,26 @@ target_link_libraries(
   PUBLIC protobuf::libprotobuf
   PUBLIC ${CURL_LIBRARY}
 )
-# use different syntax for Windows
 if(NOT WIN32)
   target_link_libraries(
     request
     PUBLIC -lpthread
   )
 endif()
-target_include_directories(request PRIVATE ${CURL_INCLUDE_DIRS})
-
 
 install(
   TARGETS request
   LIBRARY DESTINATION lib
 )
 install(
-  FILES request.h request_grpc.h request_http.h
+  TARGETS request_static
+  ARCHIVE DESTINATION lib
+)
+install(
+  FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/flat_include/request.h
+    ${CMAKE_CURRENT_BINARY_DIR}/flat_include/request_grpc.h
+    ${CMAKE_CURRENT_BINARY_DIR}/flat_include/request_http.h
   DESTINATION include
 )
 install(
@@ -90,7 +148,7 @@ install(
 if(WIN32)
   message("Currently, CMake will only build client library and skip example "
           "clients in Windows. Because the examples use functionalities that "
-		  "are UNIX specific.")
+		      "are UNIX specific.")
 else()
 #
 # ensemble_image_client
@@ -98,7 +156,7 @@ else()
 add_executable(ensemble_image_client ensemble_image_client.cc)
 target_link_libraries(
   ensemble_image_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS ensemble_image_client
@@ -113,7 +171,7 @@ add_executable(image_client image_client.cc)
 target_include_directories(image_client PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(
   image_client
-  PRIVATE request
+  PRIVATE request_static
   PRIVATE ${OpenCV_LIBS}
 )
 install(
@@ -145,7 +203,7 @@ add_executable(perf_client
   ${PERF_CLIENT_SRCS} ${PERF_CLIENT_HDRS})
 target_link_libraries(
   perf_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS perf_client
@@ -158,7 +216,7 @@ install(
 add_executable(simple_client simple_client.cc)
 target_link_libraries(
   simple_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS simple_client
@@ -175,7 +233,7 @@ endif()
 add_executable(simple_shm_client simple_shm_client.cc)
 target_link_libraries(
   simple_shm_client
-  PRIVATE request
+  PRIVATE request_static
   ${RT}
 )
 install(
@@ -189,7 +247,7 @@ install(
 add_executable(simple_callback_client simple_callback_client.cc)
 target_link_libraries(
   simple_callback_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS simple_callback_client
@@ -202,7 +260,7 @@ install(
 add_executable(simple_sequence_client simple_sequence_client.cc)
 target_link_libraries(
   simple_sequence_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS simple_sequence_client
@@ -215,7 +273,7 @@ install(
 add_executable(simple_string_client simple_string_client.cc)
 target_link_libraries(
   simple_string_client
-  PRIVATE request
+  PRIVATE request_static
 )
 install(
   TARGETS simple_string_client
