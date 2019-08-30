@@ -60,7 +60,7 @@ if os.name == 'nt':
 elif sys.platform == 'darwin':
     platform_package_data = [ 'libcrequest.dylib', 'librequest.dylib', ]
 else:
-    platform_package_data = [ 'libcrequest.so', 'librequest.so', ]
+    platform_package_data = [ 'libcrequest.so', 'librequest.so', 'libcshm.so' ]
 
 setup(
     name='tensorrtserver',
