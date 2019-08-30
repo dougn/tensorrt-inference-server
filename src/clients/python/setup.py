@@ -58,7 +58,7 @@ except ImportError:
 if os.name == 'nt':
     platform_package_data = [ 'crequest.dll', 'request.dll', ]
 elif sys.platform == 'darwin':
-    platform_package_data = [ 'libcrequest.dylib', 'librequest.dylib', ]
+    platform_package_data = [ 'libcrequest.dylib', 'librequest.dylib', 'libcshm.dylib']
 else:
     platform_package_data = [ 'libcrequest.so', 'librequest.so', 'libcshm.so' ]
 

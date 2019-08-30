@@ -38,10 +38,14 @@ target_link_libraries(
 #
 # libcshm.so
 #
+if(NOT APPLE)
+set(RT, rt)
+endif()
+
 add_library(cshm SHARED shared_memory/shared_memory.cc)
 target_link_libraries(
   cshm
-  rt
+  ${rt}
 )
 
 #
