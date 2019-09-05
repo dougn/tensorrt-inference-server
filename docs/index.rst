@@ -53,11 +53,11 @@ NVIDIA TensorRT Inference Server
    install
    run
    client
+   client_example
    models_and_schedulers
    model_repository
    model_configuration
    model_management
-   http_grpc_api
    metrics
 
 .. toctree::
@@ -66,6 +66,8 @@ NVIDIA TensorRT Inference Server
 
    architecture
    custom_operation
+   http_grpc_api
+   library_api
    build
    test
    contribute

@@ -24,13 +24,62 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-replicaCount: 1
+cmake_minimum_required (VERSION 3.5)
 
-image:
-  imageName: nvcr.io/nvidia/tensorrtserver:19.08-py3
-  pullPolicy: IfNotPresent
-  modelRepositoryPath: gs://tensorrt-inference-server-repository/model_repository
-  numGpus: 1
+#
+# Dependencies
+#
 
-service:
-  type: LoadBalancer
+# Protobuf
+set(protobuf_MODULE_COMPATIBLE TRUE CACHE BOOL "protobuf_MODULE_COMPATIBLE" FORCE)
+find_package(Protobuf CONFIG REQUIRED)
+message(STATUS "Using protobuf ${Protobuf_VERSION}")
+include_directories(${Protobuf_INCLUDE_DIRS})
+
+# GRPC
+find_package(gRPC CONFIG REQUIRED)
+message(STATUS "Using gRPC ${gRPC_VERSION}")
+include_directories($<TARGET_PROPERTY:gRPC::grpc,INTERFACE_INCLUDE_DIRECTORIES>)
+
+# Curl
+find_package(CURL REQUIRED)
+
+#
+# Example applications
+#
+include_directories("${PROJECT_SOURCE_DIR}/../../../include")
+
+# simple_client using static library, librequest_static.a
+add_executable(
+  simple_client_static
+  ${PROJECT_SOURCE_DIR}/../../simple_client.cc
+)
+target_link_libraries(
+  simple_client_static
+  PRIVATE -L${PROJECT_SOURCE_DIR}/../../../lib
+  PRIVATE request_static
+  PRIVATE gRPC::grpc++
+  PRIVATE gRPC::grpc
+  PUBLIC protobuf::libprotobuf
+  PUBLIC ${CURL_LIBRARY}
+)
+install(
+  TARGETS simple_client_static
+  RUNTIME DESTINATION bin
+)
+
+# simple_client using shared library, librequest.so
+add_executable(
+  simple_client_shared
+  ${PROJECT_SOURCE_DIR}/../../simple_client.cc
+)
+target_link_libraries(
+  simple_client_shared
+  PRIVATE -L${PROJECT_SOURCE_DIR}/../../../lib
+  PRIVATE request
+  PUBLIC protobuf::libprotobuf
+)
+install(
+  TARGETS simple_client_shared
+  RUNTIME DESTINATION bin
+)

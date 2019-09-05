@@ -62,7 +62,7 @@ container. This container will contain the inference server, the QA
 tests, and all the dependencies needed to run the QA tests. You must
 first build the tensorrtserver_client, tensorrtserver_cbe,
 tensorrtserver_build and tensorrtserver containers as described in
-:ref:`section-getting-the-client-libraries-and-examples` and
+:ref:`section-getting-the-client-libraries` and
 :ref:`section-building` and then build the QA container::
 
   $ docker build -t tensorrtserver_qa -f Dockerfile.QA .
@@ -73,9 +73,9 @@ Run QA Container
 Now run the QA container and mount the QA model repositories into the
 container so the tests will be able to access them::
 
-  $ nvidia-docker run -it --rm -v/tmp:/data/inferenceserver tensorrtserver_qa
+  $ nvidia-docker run -it --rm -v/tmp:/data/inferenceserver/<TRTIS_CONTAINER_VERSION> tensorrtserver_qa
 
 Within the container the QA tests are in /opt/tensorrtserver/qa. To run a test::
 
   $ cd <test directory>
-  $ ./test.sh
+  $ ./test.sh <TRTIS_CONTAINER_VERSION>

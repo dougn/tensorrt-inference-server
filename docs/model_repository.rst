@@ -35,10 +35,14 @@ accessible file path or from Google Cloud Storage. This path is
 specified when the server is started using the -\\-model-repository option.
 
 For a locally accessible file-system the absolute path must be
-specified, for example, -\\-model-repository=/path/to/model/repository. For
-a model repository residing in Google Cloud Storage, the path must be
-prefixed with gs://, for example,
--\\-model-repository=gs://bucket/path/to/model/repository.
+specified, for example,
+-\\-model-repository=/path/to/model/repository. For a model repository
+residing in Google Cloud Storage, the path must be prefixed with
+gs://, for example,
+-\\-model-repository=gs://bucket/path/to/model/repository.  For a
+model repository residing in Amazon S3, the path must be
+prefixed with s3://, for example,
+-\\-model-repository=s3://bucket/path/to/model/repository.
 
 :ref:`section-example-model-repository` describes how to create an
 example repository with a couple of image classification models.
@@ -69,14 +73,13 @@ determine if any models failed to load successfully. The server's
 console log will also show the reason for any failures during startup.
 
 The name of the model directory (model_0 and model_1 in the above
-example) must match the name of the model specified in the
-:ref:`model configuration file <section-model-configuration>`,
-config.pbtxt. The model name is used in the :ref:`client API
-<section-client-api>` and :ref:`server API
-<section-inference-server-api>` to identify the model. Each model
-directory must have at least one numeric subdirectory. Each of these
-subdirectories holds a version of the model with the version number
-corresponding to the directory name.
+example) must match the name of the model specified in the :ref:`model
+configuration file <section-model-configuration>`, config.pbtxt. The
+model name is used in the :ref:`client API <section-client-api>` and
+:ref:`server API <section-http-and-grpc-api>` to identify the
+model. Each model directory must have at least one numeric
+subdirectory. Each of these subdirectories holds a version of the
+model with the version number corresponding to the directory name.
 
 For more information about how the model versions are handled by the
 server see :ref:`section-model-versions`.  Within each version
@@ -328,9 +331,9 @@ different shared libraries for different compute capabilities.
 
 Currently, only model repositories on the local filesystem support
 custom backends. A custom backend contained in a model repository in
-cloud storage (for example, a repository in GCS accessed with the
-gs:// prefix as described above) cannot be loaded by the inference
-server.
+cloud storage (for example, a repository accessed with the gs://
+prefix or s3:// prefix as described above) cannot be loaded by the
+inference server.
 
 Custom Backend API
 ^^^^^^^^^^^^^^^^^^

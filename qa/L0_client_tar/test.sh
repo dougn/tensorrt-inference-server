@@ -25,54 +25,82 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-CLIENT_LOG="./client.log"
-PLUGIN_TEST=trt_plugin_test.py
+CLIENT_LOG=client.log
 
-DATADIR=/data/inferenceserver/$1/qa_trt_plugin_model_repository
+# Install the tar file
+rm -fr trtis_client
+mkdir trtis_client
+(cd trtis_client && tar xzvf /workspace/*.tar.gz)
 
-SERVER=/opt/tensorrtserver/bin/trtserver
-SERVER_ARGS="--model-repository=$DATADIR --exit-timeout-secs=120"
-SERVER_LOG="./inference_server.log"
-source ../common/util.sh
+# Build
+cd trtis_client/src/cmake
+cmake .
+make -j16 trtis-clients
 
-rm -f $SERVER_LOG $CLIENT_LOG
+# There is no server running but can still check to make sure that the
+# example application starts correctly.
+set +e
 
-RET=0
-
-run_server
-if [ "$SERVER_PID" == "0" ]; then
-    echo -e "\n***\n*** Failed to start $SERVER\n***"
-    cat $SERVER_LOG
+# Shared HTTP
+trtis-clients/install/bin/simple_client_shared > $CLIENT_LOG 2>&1
+if [ $? -ne 1 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Unexpected Pass for simple_client_shared HTTP\n***"
     exit 1
 fi
 
-set +e
-# python unittest seems to swallow ImportError and still return 0
-# exit code. So need to explicitly check CLIENT_LOG to make sure
-# we see some running tests
-python $PLUGIN_TEST >$CLIENT_LOG 2>&1
+grep -c "Couldn't connect to server" $CLIENT_LOG
 if [ $? -ne 0 ]; then
     cat $CLIENT_LOG
     echo -e "\n***\n*** Test Failed\n***"
-    RET=1
+    exit 1
 fi
 
-grep -c "HTTP/1.1 200 OK" $CLIENT_LOG
+# Shared GRPC
+trtis-clients/install/bin/simple_client_shared -i grpc > $CLIENT_LOG 2>&1
+if [ $? -ne 1 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Unexpected Pass for simple_client_shared GRPC\n***"
+    exit 1
+fi
+
+grep -c "Connect Failed" $CLIENT_LOG
 if [ $? -ne 0 ]; then
     cat $CLIENT_LOG
-    echo -e "\n***\n*** Test Failed To Run\n***"
-    RET=1
+    echo -e "\n***\n*** Test Failed\n***"
+    exit 1
 fi
+
+# Static HTTP
+trtis-clients/install/bin/simple_client_static > $CLIENT_LOG 2>&1
+if [ $? -ne 1 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Unexpected Pass for simple_client_static HTTP\n***"
+    exit 1
+fi
+
+grep -c "Couldn't connect to server" $CLIENT_LOG
+if [ $? -ne 0 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Test Failed\n***"
+    exit 1
+fi
+
+# Static GRPC
+trtis-clients/install/bin/simple_client_static -i grpc > $CLIENT_LOG 2>&1
+if [ $? -ne 1 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Unexpected Pass for simple_client_static GRPC\n***"
+    exit 1
+fi
+
+grep -c "Connect Failed" $CLIENT_LOG
+if [ $? -ne 0 ]; then
+    cat $CLIENT_LOG
+    echo -e "\n***\n*** Test Failed\n***"
+    exit 1
+fi
+
 set -e
 
-kill $SERVER_PID
-wait $SERVER_PID
-
-if [ $RET -eq 0 ]; then
-    echo -e "\n***\n*** Test Passed\n***"
-else
-    cat $CLIENT_LOG
-    echo -e "\n***\n*** Test FAILED\n***"
-fi
-
-exit $RET
+echo -e "\n***\n*** Test Passed\n***"

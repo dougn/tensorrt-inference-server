@@ -1,5 +1,5 @@
 ..
-  # Copyright (c) 2018-2019, NVIDIA CORPORATION. All rights reserved.
+  # Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
   #
   # Redistribution and use in source and binary forms, with or without
   # modification, are permitted provided that the following conditions
@@ -25,36 +25,27 @@
   # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Installing the Server
-=====================
+.. _section-library-api:
 
-The TensorRT Inference Server is available as a pre-built Docker
-container or you can :ref:`build it from source
-<section-building>`.
+Library API
+===========
 
-.. _section-installing-prebuilt-containers:
+The TensorRT Inference Server provides a backwards-compatible C API
+that allows the server to be linked directly into a C/C++
+application. The API is documented in `trtserver.h
+<https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/core/trtserver.h>`_
+as well as in the API section of the documentation.
 
-Installing Prebuilt Containers
-------------------------------
-
-The inference server is provided as a pre-built container on the
-`NVIDIA GPU Cloud (NGC) <https://ngc.nvidia.com>`_.  Before pulling the
-container you must have access and be logged into the NGC container
-registry as explained in the `NGC Getting Started Guide
-<http://docs.nvidia.com/ngc/ngc-getting-started-guide/index.html>`_.
-
-Before you can pull a container from the NGC container registry, you
-must have Docker and nvidia-docker installed. For DGX users, this is
-explained in `Preparing to use NVIDIA Containers Getting Started Guide
-<http://docs.nvidia.com/deeplearning/dgx/preparing-containers/index.html>`_.
-For users other than DGX, follow the `nvidia-docker installation
-documentation <https://github.com/NVIDIA/nvidia-docker>`_ to install
-the most recent version of CUDA, Docker, and nvidia-docker.
-
-After performing the above setup, you can pull the TensorRT Inference
-Server container using the following command::
-
-  docker pull nvcr.io/nvidia/tensorrtserver:19.08-py3
-
-Replace *19.08* with the version of inference server that you want to
-pull.
+A simple example of the library API can be found at
+`src/servers/simple.cc
+<https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/servers/simple.cc>`_. A
+more complicated example can be found in the files that make up the
+inference server executable, *trtserver*. The trtserver executable
+implements the HTTP and GRPC endpoints and uses the library API to
+communicate with the inference server. The primary files composing
+*trtserver* are `src/servers/main.cc
+<https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/servers/main.cc>`_,
+`src/servers/grpc_server.cc
+<https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/servers/grpc_server.cc>`_,
+and `src/servers/http_server.cc
+<https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/servers/http_server.cc>`_.

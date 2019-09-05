@@ -32,15 +32,15 @@ NVIDIA TensorRT Inference Server
 
     **LATEST RELEASE: You are currently on the master branch which
     tracks under-development progress towards the next release. The
-    latest release of the TensorRT Inference Server is 1.4.0 and
-    is available on branch** `r19.07
-    <https://github.com/NVIDIA/tensorrt-inference-server/tree/r19.07>`_.
+    latest release of the TensorRT Inference Server is 1.5.0 and
+    is available on branch** `r19.08
+    <https://github.com/NVIDIA/tensorrt-inference-server/tree/r19.08>`_.
 
 .. overview-begin-marker-do-not-remove
 
 The NVIDIA TensorRT Inference Server provides a cloud inferencing
 solution optimized for NVIDIA GPUs. The server provides an inference
-service via an HTTP or gRPC endpoint, allowing remote clients to
+service via an HTTP or GRPC endpoint, allowing remote clients to
 request inferencing for any model being managed by the server. The
 inference server provides the following features:
 
@@ -94,8 +94,8 @@ inference server provides the following features:
 
 * `Model repositories
   <https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/model_repository.html#>`_
-  may reside on a locally accessible file system (e.g. NFS) or in
-  Google Cloud Storage.
+  may reside on a locally accessible file system (e.g. NFS), in Google
+  Cloud Storage or in Amazon S3.
 
 * Readiness and liveness `health endpoints
   <https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/http_grpc_api.html#health>`_
@@ -106,13 +106,18 @@ inference server provides the following features:
   <https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/metrics.html>`_
   indicating GPU utilization, server throughput, and server latency.
 
+* `C library inferface
+  <https://docs.nvidia.com/deeplearning/sdk/tensorrt-inference-server-master-branch-guide/docs/library_api.html>`_
+  allows the full functionality of the inference server to be included
+  directly in an application.
+
 .. overview-end-marker-do-not-remove
 
-The current release of the TensorRT Inference Server is 1.4.0 and
-corresponds to the 19.07 release of the tensorrtserver container on
+The current release of the TensorRT Inference Server is 1.5.0 and
+corresponds to the 19.08 release of the tensorrtserver container on
 `NVIDIA GPU Cloud (NGC) <https://ngc.nvidia.com>`_. The branch for
-this release is `r19.07
-<https://github.com/NVIDIA/tensorrt-inference-server/tree/r19.07>`_.
+this release is `r19.08
+<https://github.com/NVIDIA/tensorrt-inference-server/tree/r19.08>`_.
 
 Backwards Compatibility
 -----------------------
@@ -144,12 +149,10 @@ ways. When they exit beta they will conform to the
 backwards-compatibility guarantees described above. Currently the
 following features are in beta:
 
-* In the model configuration defined in `model_config.proto
-  <https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/core/model_config.proto>`_
-  the sections related to model ensembling are currently in beta. In
-  particular, the ModelEnsembling message will potentially undergo
-  non-backwards-compatible changes.
-
+* The inference server library API as defined in `trtserver.h
+  <https://github.com/NVIDIA/tensorrt-inference-server/blob/master/src/core/trtserver.h>`_
+  is currently in beta and may undergo non-backwards-compatible
+  changes.
 
 Documentation
 -------------

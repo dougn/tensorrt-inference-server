@@ -28,9 +28,9 @@
 # Multistage build.
 #
 
-ARG BASE_IMAGE=nvcr.io/nvidia/tensorrtserver:19.07-py3
-ARG PYTORCH_IMAGE=nvcr.io/nvidia/pytorch:19.07-py3
-ARG TENSORFLOW_IMAGE=nvcr.io/nvidia/tensorflow:19.07-py3
+ARG BASE_IMAGE=nvcr.io/nvidia/tensorrtserver:19.08-py3
+ARG PYTORCH_IMAGE=nvcr.io/nvidia/pytorch:19.08-py3
+ARG TENSORFLOW_IMAGE=nvcr.io/nvidia/tensorflow:19.08-py3
 
 ############################################################################
 ## TensorFlow stage: Use TensorFlow container to build
@@ -165,8 +165,8 @@ RUN python3 /workspace/onnxruntime/tools/ci_build/build.py --build_dir /workspac
 ############################################################################
 FROM ${BASE_IMAGE} AS trtserver_build
 
-ARG TRTIS_VERSION=1.5.0dev
-ARG TRTIS_CONTAINER_VERSION=19.08dev
+ARG TRTIS_VERSION=1.6.0dev
+ARG TRTIS_CONTAINER_VERSION=19.09dev
 
 # libgoogle-glog0v5 is needed by caffe2 libraries.
 RUN apt-get update && \
@@ -232,8 +232,8 @@ COPY --from=trtserver_caffe2 /opt/conda/lib/python3.6/site-packages/torch/includ
      /opt/tensorrtserver/include/torch
 COPY --from=trtserver_caffe2 /opt/conda/lib/python3.6/site-packages/torch/lib/libtorch.so \
       /opt/tensorrtserver/lib/
-COPY --from=trtserver_caffe2 /opt/conda/lib/python3.6/site-packages/torch/lib/libthnvrtc.so \
-      /opt/tensorrtserver/lib/
+COPY --from=trtserver_caffe2 /opt/conda/lib/python3.6/site-packages/torch/lib/libcaffe2_nvrtc.so \
+     /opt/tensorrtserver/lib/
 
 # Onnx Runtime headers and library
 ARG ONNX_RUNTIME_VERSION=0.4.0
@@ -299,8 +299,8 @@ ENTRYPOINT ["/opt/tensorrtserver/nvidia_entrypoint.sh"]
 ############################################################################
 FROM ${BASE_IMAGE}
 
-ARG TRTIS_VERSION=1.5.0dev
-ARG TRTIS_CONTAINER_VERSION=19.08dev
+ARG TRTIS_VERSION=1.6.0dev
+ARG TRTIS_CONTAINER_VERSION=19.09dev
 
 ENV TENSORRT_SERVER_VERSION ${TRTIS_VERSION}
 ENV NVIDIA_TENSORRT_SERVER_VERSION ${TRTIS_CONTAINER_VERSION}

@@ -56,7 +56,7 @@ following prerequisite steps:
   sure to select the r<xx.yy> release branch that corresponds to the
   version of the server you want to use::
 
-  $ git checkout r19.07
+  $ git checkout r19.08
 
 * Create a model repository containing one or more models that you
   want the inference server to serve. An example model repository is
@@ -99,7 +99,7 @@ and the example client applications.
 
 #. :ref:`Run the inference server <section-run-tensorrt-inference-server>`.
 #. :ref:`Verify that the server is running correct <section-verify-inference-server-status>`.
-#. :ref:`Get the example client applications <section-getting-the-client-examples>`.
+#. :ref:`Get the example client applications <section-getting-the-examples>`.
 #. :ref:`Run the image classification example <section-running-the-image-classification-example>`.
 
 .. _section-building-with-docker:
@@ -114,7 +114,7 @@ GitHub repo and checkout the release version of the branch that you
 want to build (or the master branch if you want to build the
 under-development version)::
 
-  $ git checkout r19.07
+  $ git checkout r19.08
 
 Then use docker to build::
 
@@ -125,7 +125,7 @@ example client applications.
 
 #. :ref:`Run the inference server <section-run-tensorrt-inference-server>`.
 #. :ref:`Verify that the server is running correct <section-verify-inference-server-status>`.
-#. :ref:`Get the example client applications <section-getting-the-client-examples>`.
+#. :ref:`Get the example client applications <section-getting-the-examples>`.
 #. :ref:`Run the image classification example <section-running-the-image-classification-example>`.
 
 .. _section-building-with-cmake:
@@ -145,7 +145,7 @@ example client applications.
 
 #. :ref:`Run the inference server <section-run-tensorrt-inference-server>`.
 #. :ref:`Verify that the server is running correct <section-verify-inference-server-status>`.
-#. :ref:`Get the example client applications <section-getting-the-client-examples>`.
+#. :ref:`Get the example client applications <section-getting-the-examples>`.
 #. :ref:`Run the image classification example <section-running-the-image-classification-example>`.
 
 .. _section-run-tensorrt-inference-server:
@@ -217,7 +217,7 @@ the server is ready to receive inference requests.
 For more information, see
 :ref:`section-checking-inference-server-status`.
 
-.. _section-getting-the-client-examples:
+.. _section-getting-the-examples:
 
 Getting The Client Examples
 ---------------------------
@@ -229,7 +229,7 @@ and checkout the release version of the branch that you want to build
 version). The branch you use for the client build should match the
 version of the inference server you are using::
 
-  $ git checkout r19.07
+  $ git checkout r19.08
 
 Then use docker to build the C++ client library, C++ and Python
 examples, and a Python wheel file for the Python client library::
@@ -244,8 +244,7 @@ so that the client examples can access the inference server::
 
 It is also possible to build the client examples without Docker and
 for some platforms pre-compiled client examples are available. For
-more information, see
-:ref:`section-getting-the-client-libraries-and-examples`.
+more information, see :ref:`section-getting-the-client-examples`.
 
 .. _section-running-the-image-classification-example:
 
