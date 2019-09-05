@@ -49,6 +49,8 @@ configure_file(request_grpc.h.in request_grpc.h @ONLY)
 configure_file(request_http.h.in request_http.h @ONLY)
 configure_file(simple_client.cc.in simple_client.cc @ONLY)
 
+configure_file(CMakeLists.txt ../../../../CMakeLists.txt COPYONLY)
+
 # librequest object build
 set(
   REQUEST_SRCS
