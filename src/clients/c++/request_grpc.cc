@@ -402,6 +402,8 @@ SharedMemoryControlGrpcContext::Create(
 }
 
 //==============================================================================
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
 
 class TraceControlGrpcContextImpl : public TraceControlContext {
  public:
@@ -416,6 +418,7 @@ class TraceControlGrpcContextImpl : public TraceControlContext {
   // Enable verbose output
   const bool verbose_;
 };
+#pragma clang diagnostic pop
 
 TraceControlGrpcContextImpl::TraceControlGrpcContextImpl(
     const std::string& url, bool verbose)
