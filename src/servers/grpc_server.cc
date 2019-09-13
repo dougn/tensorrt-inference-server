@@ -710,6 +710,9 @@ InferAllocatorPayload(
     AllocPayload* alloc_payload)
 {
   alloc_payload->response_ = &response;
+  if (alloc_payload->shm_map_ != nullptr) {
+    alloc_payload->shm_map_->clear();
+  }
 
   // If any of the outputs use shared memory, then we must calculate
   // the memory address for that output and store it in the allocator
@@ -1590,7 +1593,7 @@ TraceControlHandler::Process(Handler::State* state, bool rpc_ok)
     if (request.has_trace_configure()) {
       TRTSERVER_TraceOptions* options = nullptr;
       err = TRTSERVER_TraceOptionsNew(&options);
-      if (err != nullptr) {
+      if (err == nullptr) {
         TRTSERVER_TraceOptionsSetTraceName(
             options, request.trace_configure().name().c_str());
         TRTSERVER_TraceOptionsSetHost(
@@ -1607,8 +1610,9 @@ TraceControlHandler::Process(Handler::State* state, bool rpc_ok)
         }
       }
     } else if (request.has_trace_enable()) {
-        err = TRTSERVER_ServerTraceSetLevel(
-            trtserver_.get(), request.trace_enable().level(), request.trace_enable().rate());
+      err = TRTSERVER_ServerSetTraceLevel(
+          trtserver_.get(), request.trace_enable().level(),
+          request.trace_enable().rate());
     }
 
     RequestStatusUtil::Create(
