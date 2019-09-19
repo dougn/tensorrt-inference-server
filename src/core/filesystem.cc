@@ -118,9 +118,9 @@ LocalFileSystem::FileModificationTime(
     return Status(RequestStatusCode::INTERNAL, "failed to stat file " + path);
   }
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
-  *mtime_ns = st.st_mtimespec.tv_sec * NANOS_PER_SECOND + st.st_mtimespec.tv_nsec;
+  *mtime_ns = TIMESPEC_TO_NANOS(st.st_mtimespec);
 #else
-  *mtime_ns = st.st_mtim.tv_sec * NANOS_PER_SECOND + st.st_mtim.tv_nsec;
+  *mtime_ns = TIMESPEC_TO_NANOS(st.st_mtim);
 #endif
   return Status::Success;
 }

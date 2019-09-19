@@ -50,10 +50,7 @@ class ServerStatTimerScoped {
     MODEL_CONTROL,
     // Stat for shared memory control request. Duration from request
     // to response.
-    SHARED_MEMORY_CONTROL,
-    // Stat for trace control request. Duration from request to
-    // response.
-    TRACE_CONTROL
+    SHARED_MEMORY_CONTROL
   };
 
   // Start server timer for a given status 'kind'.
@@ -85,11 +82,13 @@ class ServerStatTimerScoped {
 class ModelInferStats {
  public:
   enum class TimestampKind {
-    kRequestStart,  // Start request processing
-    kQueueStart,    // Request enters the queue
-    kComputeStart,  // Request leaves queue and starts compute
-    kComputeEnd,    // Request completes compute
-    kRequestEnd,    // Done with request processing
+    kRequestStart,        // Start request processing
+    kQueueStart,          // Request enters the queue
+    kComputeStart,        // Request leaves queue and starts compute
+    kComputeInputEnd,     // Requests finishes preparing inputs
+    kComputeOutputStart,  // Request starts processing outputs
+    kComputeEnd,          // Request completes compute
+    kRequestEnd,          // Done with request processing
     COUNT__
   };
 

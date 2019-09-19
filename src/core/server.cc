@@ -77,7 +77,7 @@ InferenceServer::InferenceServer()
 {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  start_time_ns_ = ts.tv_sec * NANOS_PER_SECOND + ts.tv_nsec;
+  start_time_ns_ = TIMESPEC_TO_NANOS(ts);
 
   const char* vstr = getenv("TENSORRT_SERVER_VERSION");
   if (vstr != nullptr) {
@@ -418,38 +418,15 @@ InferenceServer::SharedMemoryAddress(
 }
 
 Status
-InferenceServer::ConfigureTrace(
-    const std::string& trace_name, const std::string& hostname, uint32_t port)
+InferenceServer::GetSharedMemoryStatus(SharedMemoryStatus* shm_status)
 {
-#ifdef TRTIS_ENABLE_TRACING
   if (ready_state_ != ServerReadyState::SERVER_READY) {
     return Status(RequestStatusCode::UNAVAILABLE, "Server not ready");
   }
 
   ScopedAtomicIncrement inflight(inflight_request_counter_);
-  return TraceManager::Create(trace_name, hostname, port);
-#else
-  return Status(
-      RequestStatusCode::UNSUPPORTED,
-      "tracing is not supported by this server");
-#endif  // TRTIS_ENABLE_TRACING
-}
 
-Status
-InferenceServer::SetTraceLevel(uint32_t level, uint32_t rate)
-{
-#ifdef TRTIS_ENABLE_TRACING
-  if (ready_state_ != ServerReadyState::SERVER_READY) {
-    return Status(RequestStatusCode::UNAVAILABLE, "Server not ready");
-  }
-
-  ScopedAtomicIncrement inflight(inflight_request_counter_);
-  return TraceManager::SetLevel(level, rate);
-#else
-  return Status(
-      RequestStatusCode::UNSUPPORTED,
-      "tracing is not supported by this server");
-#endif  // TRTIS_ENABLE_TRACING
+  return shared_memory_manager_->GetSharedMemoryStatus(shm_status);
 }
 
 uint64_t
@@ -458,7 +435,7 @@ InferenceServer::UptimeNs() const
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
 
-  uint64_t now_ns = now.tv_sec * NANOS_PER_SECOND + now.tv_nsec;
+  uint64_t now_ns = TIMESPEC_TO_NANOS(now);
   return now_ns - start_time_ns_;
 }
 

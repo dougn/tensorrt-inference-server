@@ -38,7 +38,6 @@ constexpr char kStatusRESTEndpoint[] = "api/status";
 constexpr char kHealthRESTEndpoint[] = "api/health";
 constexpr char kModelControlRESTEndpoint[] = "api/modelcontrol";
 constexpr char kSharedMemoryControlRESTEndpoint[] = "api/sharedmemorycontrol";
-constexpr char kTraceControlRESTEndpoint[] = "api/tracecontrol";
 
 #ifdef TRTIS_ENABLE_TENSORFLOW
 constexpr char kTensorFlowGraphDefPlatform[] = "tensorflow_graphdef";
@@ -73,6 +72,9 @@ constexpr char kCustomPlatform[] = "custom";
 constexpr char kCustomFilename[] = "libcustom.so";
 #endif  // TRTIS_ENABLE_CUSTOM
 
+constexpr char kTensorRTExecutionAccelerator[] = "tensorrt";
+constexpr char kOpenVINOExecutionAccelerator[] = "openvino";
+
 constexpr char kEnsemblePlatform[] = "ensemble";
 constexpr char kModelConfigPbTxt[] = "config.pbtxt";
 
@@ -84,6 +86,9 @@ constexpr uint64_t NANOS_PER_SECOND = 1000000000;
 constexpr int MAX_GRPC_MESSAGE_SIZE = INT32_MAX;
 constexpr int SCHEDULER_DEFAULT_NICE = 5;
 constexpr uint64_t SEQUENCE_IDLE_DEFAULT_MICROSECONDS = 1000 * 1000;
+
+#define TIMESPEC_TO_NANOS(TS) \
+  ((TS).tv_sec * nvidia::inferenceserver::NANOS_PER_SECOND + (TS).tv_nsec)
 
 #define DISALLOW_MOVE(TypeName) TypeName(Context&& o) = delete;
 #define DISALLOW_COPY(TypeName) TypeName(const TypeName&) = delete;

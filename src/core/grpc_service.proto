@@ -86,13 +86,6 @@ service GRPCService
       returns (SharedMemoryControlResponse)
   {
   }
-
-  //@@  .. cpp:var:: rpc TraceControl(TraceControlRequest) returns
-  //@@     (TraceControlResponse)
-  //@@
-  //@@     Enable and disable tracing.
-  //@@
-  rpc TraceControl(TraceControlRequest) returns (TraceControlResponse) {}
 }
 
 //@@
@@ -131,105 +124,6 @@ message StatusResponse
   //@@     The server and model status.
   //@@
   ServerStatus server_status = 2;
-}
-
-//@@
-//@@.. cpp:var:: message TraceControlRequest
-//@@
-//@@   Request message for tracecontrol gRPC endpoint.
-//@@
-message TraceControlRequest
-{
-  //@@  .. cpp:var:: message TraceConfigure
-  //@@
-  //@@     Setting for configuring tracing. Must be used before tracing
-  //@@     can be enabled. Can be used only once because the trace
-  //@@     configuration can't be changed once it is set.
-  //@@
-  message TraceConfigure
-  {
-    //@@    .. cpp:var:: string name
-    //@@
-    //@@       Descriptive name for the trace being collected.
-    //@@       Default is "TRTIS".
-    //@@
-    string name = 1;
-
-    //@@    .. cpp:var:: string host
-    //@@
-    //@@       The name of the server where the trace information will be
-    //@@       delivered.
-    //@@
-    string host = 2;
-
-    //@@    .. cpp:var:: uint32 port
-    //@@
-    //@@       The port on the server where the trace information will be
-    //@@       delivered.
-    //@@
-    uint32 port = 3;
-  }
-
-  //@@  .. cpp:var:: message TraceEnable
-  //@@
-  //@@     Setting for enabling tracing.
-  //@@
-  message TraceEnable
-  {
-    //@@    .. cpp:var:: uint32 level
-    //@@
-    //@@       Set the trace level.
-    //@@
-    //@@         0: Disable tracing.
-    //@@
-    //@@         1: Minimal tracing, trace only overall request, queue
-    //@@            and compute.
-    //@@
-    //@@         2: Full tracing, minimal tracing plus details.
-    //@@
-    uint32 level = 1;
-
-    //@@    .. cpp:var:: uint32 sample_rate
-    //@@
-    //@@       When enabling tracing sets the sample rate. Every
-    //@@       'rate' request will be sampled.
-    //@@
-    uint32 rate = 2;
-  }
-
-  //@@  .. cpp:var:: oneof trace_choice
-  //@@
-  //@@     The types of trace requests.
-  //@@
-  oneof trace_choice
-  {
-    //@@    .. cpp:var:: TraceConfigure trace_configure
-    //@@
-    //@@       Configure tracing.
-    //@@
-    TraceConfigure trace_configure = 1;
-
-    //@@    .. cpp:var:: TraceEnable trace_enable
-    //@@
-    //@@       Enable tracing.
-    //@@
-    TraceEnable trace_enable = 2;
-  }
-}
-
-//@@
-//@@.. cpp:var:: message TraceControlResponse
-//@@
-//@@   Response message for tracecontrol endpoint.
-//@@
-message TraceControlResponse
-{
-  //@@
-  //@@  .. cpp:var:: RequestStatus request_status
-  //@@
-  //@@     The status of the request, indicating success or failure.
-  //@@
-  RequestStatus request_status = 1;
 }
 
 //@@
@@ -328,41 +222,6 @@ message ModelControlResponse
   RequestStatus request_status = 1;
 }
 
-//@@.. cpp:var:: message InferSharedMemoryRegion
-//@@
-//@@   The meta-data for the shared memory region from which to read the input
-//@@   data and/or write the output data.
-//@@
-message InferSharedMemoryRegion
-{
-  //@@
-  //@@  .. cpp:var:: string name
-  //@@
-  //@@     The name for this shared memory region.
-  //@@
-  string name = 1;
-
-  //@@  .. cpp:var:: string shm_key
-  //@@
-  //@@     The name of the shared memory region that holds the input data
-  //@@     (or where the output data should be written).
-  //@@
-  string shm_key = 2;
-
-  //@@  .. cpp:var:: uint64 offset
-  //@@
-  //@@     The offset from the start of the shared memory region.
-  //@@     start = offset, end = offset + size;
-  //@@
-  uint64 offset = 3;
-
-  //@@  .. cpp:var:: uint64 byte_size
-  //@@
-  //@@     Size of the memory block, in bytes.
-  //@@
-  uint64 byte_size = 4;
-}
-
 //@@
 //@@.. cpp:var:: message SharedMemoryControlRequest
 //@@
@@ -370,47 +229,96 @@ message InferSharedMemoryRegion
 //@@
 message SharedMemoryControlRequest
 {
-  //@@  .. cpp:enum:: Type
+  //@@  .. cpp:var:: message Register
+  //@@
+  //@@     Register a shared memory region.
+  //@@
+  message Register
+  {
+    //@@
+    //@@  .. cpp:var:: string name
+    //@@
+    //@@     The name for this shared memory region.
+    //@@
+    string name = 1;
+
+    //@@  .. cpp:var:: string shared_memory_key
+    //@@
+    //@@     The name of the shared memory region that holds the input data
+    //@@     (or where the output data should be written).
+    //@@
+    string shared_memory_key = 2;
+
+    //@@  .. cpp:var:: uint64 offset
+    //@@
+    //@@     The offset from the start of the shared memory region.
+    //@@     start = offset, end = offset + size;
+    //@@
+    uint64 offset = 3;
+
+    //@@  .. cpp:var:: uint64 byte_size
+    //@@
+    //@@     Size of the memory block, in bytes.
+    //@@
+    uint64 byte_size = 4;
+  }
+
+  //@@  .. cpp:var:: message Unregister
+  //@@
+  //@@     Unregister a specified shared memory region.
+  //@@
+  message Unregister
+  {
+    //@@
+    //@@  .. cpp:var:: string name
+    //@@
+    //@@     The name for this shared memory region to unregister.
+    //@@
+    string name = 1;
+  }
+
+  //@@  .. cpp:var:: message UnregisterAll
+  //@@
+  //@@     Unregister all shared memory regions.
+  //@@
+  message UnregisterAll {}
+
+  //@@  .. cpp:var:: message GetStatus
+  //@@
+  //@@     Get the status of all active shared memory regions.
+  //@@
+  message Status {}
+
+  //@@  .. cpp:var:: oneof shared_memory_control
   //@@
   //@@     Types of control operations for shared memory
   //@@
-  enum Type {
-    //@@    .. cpp:enumerator:: Type::REGISTER = 0
+  oneof shared_memory_control
+  {
+    //@@    .. cpp:var:: Register register
     //@@
     //@@       To register the specified shared memory region.
     //@@
-    REGISTER = 0;
+    Register register = 1;
 
-    //@@    .. cpp:enumerator:: Type::UNREGISTER = 1
+    //@@    .. cpp:var:: Unregister unregister
     //@@
     //@@       To unregister the specified shared memory region.
     //@@
-    UNREGISTER = 1;
+    Unregister unregister = 2;
 
-    //@@    .. cpp:enumerator:: Type::UNREGISTER_ALL = 2
+    //@@    .. cpp:var:: UnregisterAll unregister_all
     //@@
     //@@       To unregister all active shared memory regions.
     //@@
-    UNREGISTER_ALL = 2;
+    UnregisterAll unregister_all = 3;
+
+    //@@    .. cpp:var:: Status status
+    //@@
+    //@@       Get the status of all active shared memory regions.
+    //@@
+    Status status = 4;
   }
-
-  //@@
-  //@@  .. cpp:var:: Type type
-  //@@
-  //@@     The control type that states whether to register/unregister the
-  //@@     specified shared memory region. Unregister all active shared memory
-  //@@     regions or get the list of active shared memory regions
-  //@@
-  Type type = 1;
-
-  //@@  .. cpp:var:: InferSharedMemoryRegion shared_memory_region
-  //@@
-  //@@     The shared memory region to register or unregister.
-  //@@     All fields are needed to REGISTER the shared memory region.
-  //@@     Only 'name' is needed to UNREGISTER the shared memory region.
-  //@@     No fields are needed to UNREGISTER_ALL.
-  //@@
-  InferSharedMemoryRegion shared_memory_region = 2;
 }
 
 //@@
@@ -421,11 +329,36 @@ message SharedMemoryControlRequest
 message SharedMemoryControlResponse
 {
   //@@
+  //@@.. cpp:var:: message Status
+  //@@
+  //@@   Status of all active shared memory regions.
+  //@@
+  message Status
+  {
+    //@@
+    //@@  .. cpp:var:: SharedMemoryRegion shared_memory_region
+    //@@
+    //@@     The list of active/registered shared memory regions.
+    //@@
+    repeated SharedMemoryRegion shared_memory_region = 1;
+  }
+
+  //@@
   //@@  .. cpp:var:: RequestStatus request_status
   //@@
   //@@     The status of the request, indicating success or failure.
   //@@
   RequestStatus request_status = 1;
+
+  oneof shared_memory_control
+  {
+    //@@
+    //@@  .. cpp:var:: Status shared_memory_status
+    //@@
+    //@@     The status of all active shared memory regions.
+    //@@
+    Status shared_memory_status = 2;
+  }
 }
 
 //@@

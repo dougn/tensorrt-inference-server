@@ -40,6 +40,7 @@
 #ifdef TRTIS_ENABLE_GPU
 #include <cuda_provider_factory.h>
 #include <cuda_runtime_api.h>
+#include <tensorrt_provider_factory.h>
 #endif  // TRTIS_ENABLE_GPU
 
 namespace nvidia { namespace inferenceserver {
@@ -85,7 +86,8 @@ OnnxBackend::CreateExecutionContexts(
       session_options, &OrtReleaseSessionOptions);
   RETURN_IF_ORT_ERROR(OrtSetSessionThreadPoolSize(session_options, 1));
   // disable graph optimization
-  RETURN_IF_ORT_ERROR(OrtSetSessionGraphOptimizationLevel(session_options, ORT_DISABLE_ALL));
+  RETURN_IF_ORT_ERROR(
+      OrtSetSessionGraphOptimizationLevel(session_options, ORT_DISABLE_ALL));
 
   Status status = CreateExecutionContextsHelper(session_options, models);
 
@@ -204,13 +206,50 @@ OnnxBackend::CreateExecutionContext(
   OrtResourceWrapper<OrtSessionOptions*> options_wrapper(
       session_options, &OrtReleaseSessionOptions);
 
+  // Set execution execution_accelerators (execution providers in ONNX Runtime)
   if (gpu_device != Context::NO_GPU_DEVICE) {
 #ifdef TRTIS_ENABLE_GPU
+    if (Config().optimization().has_execution_accelerators()) {
+      // Don't need to ensure uniqueness of the providers,
+      // ONNX Runtime will check it.
+      for (const auto& execution_accelerator :
+           Config()
+               .optimization()
+               .execution_accelerators()
+               .gpu_execution_accelerator()) {
+        if (execution_accelerator == kTensorRTExecutionAccelerator) {
+          RETURN_IF_ORT_ERROR(OrtSessionOptionsAppendExecutionProvider_Tensorrt(
+              session_options, gpu_device));
+          LOG_VERBOSE(1) << "TensorRT Execution Accelerator is set for "
+                         << instance_name << " on device " << gpu_device;
+        } else {
+          LOG_ERROR << "Ignore unknown Execution Accelerator '"
+                    << execution_accelerator << "' for " << instance_name;
+        }
+      }
+    }
     RETURN_IF_ORT_ERROR(OrtSessionOptionsAppendExecutionProvider_CUDA(
         session_options, gpu_device));
+    LOG_VERBOSE(1) << "CUDA Execution Accelerator is set for " << instance_name
+                   << " on device " << gpu_device;
 #else
     return Status(RequestStatusCode::INTERNAL, "GPU instances not supported");
 #endif  // TRTIS_ENABLE_GPU
+  }
+
+  if (Config().optimization().has_execution_accelerators()) {
+    for (const auto& execution_accelerator : Config()
+                                                 .optimization()
+                                                 .execution_accelerators()
+                                                 .cpu_execution_accelerator()) {
+      if (execution_accelerator == kOpenVINOExecutionAccelerator) {
+        LOG_ERROR << "OpenVINO Execution Accelerator is not supported for "
+                  << instance_name;
+      } else {
+        LOG_ERROR << "Ignore unknown Execution Accelerator '"
+                  << execution_accelerator << "' for " << instance_name;
+      }
+    }
   }
 
   // Create Onnx session
@@ -513,11 +552,25 @@ OnnxBackend::Context::Run(
     output_tensors_.emplace_back(nullptr);
   }
 
+  for (auto& payload : *payloads) {
+    if (payload.stats_ != nullptr) {
+      payload.stats_->CaptureTimestamp(
+          ModelInferStats::TimestampKind::kComputeInputEnd);
+    }
+  }
+
   // Run...
   RETURN_IF_ORT_ERROR(OrtRun(
       session_, NULL /* run options */, input_names.data(),
       (const OrtValue* const*)input_tensors_.data(), input_tensors_.size(),
       output_names.data(), output_names.size(), output_tensors_.data()));
+
+  for (auto& payload : *payloads) {
+    if (payload.stats_ != nullptr) {
+      payload.stats_->CaptureTimestamp(
+          ModelInferStats::TimestampKind::kComputeOutputStart);
+    }
+  }
 
   // Make sure each output is of the expected size and copy it into
   // the payload responses.

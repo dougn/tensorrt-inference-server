@@ -28,86 +28,55 @@
 
 #include "src/core/tracing.h"
 
-#include <cppkin.h>
-#include "src/core/logging.h"
+#include "src/core/constants.h"
 
 namespace nvidia { namespace inferenceserver {
 
-std::unique_ptr<TraceManager> TraceManager::singleton_;
-
-Status
-TraceManager::Create(
-    const std::string& trace_name, const std::string& hostname, uint32_t port)
+void
+Trace::Report(const std::shared_ptr<ModelInferStats>& infer_stats)
 {
-  // If trace object is already created then configure has already
-  // been called. Can only configure once since the zipkin library we
-  // are using doesn't allow reconfiguration.
-  if (singleton_ != nullptr) {
-    return Status(
-        RequestStatusCode::ALREADY_EXISTS, "tracing is already configured");
+  if (level_ != TRTSERVER_TRACE_LEVEL_DISABLED) {
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this), TRTSERVER_TRACE_REQUEST_START,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kRequestStart)),
+        activity_userp_);
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this), TRTSERVER_TRACE_QUEUE_START,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kQueueStart)),
+        activity_userp_);
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this), TRTSERVER_TRACE_COMPUTE_START,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kComputeStart)),
+        activity_userp_);
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this), TRTSERVER_TRACE_COMPUTE_END,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kComputeEnd)),
+        activity_userp_);
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this), TRTSERVER_TRACE_REQUEST_END,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kRequestEnd)),
+        activity_userp_);
   }
 
-  if (trace_name.empty()) {
-    return Status(
-        RequestStatusCode::INVALID_ARG,
-        "trace configuration requires a non-empty trace name");
+  if (level_ == TRTSERVER_TRACE_LEVEL_MAX) {
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this),
+        TRTSERVER_TRACE_COMPUTE_INPUT_END,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kComputeInputEnd)),
+        activity_userp_);
+    activity_fn_(
+        reinterpret_cast<TRTSERVER_Trace*>(this),
+        TRTSERVER_TRACE_COMPUTE_OUTPUT_START,
+        TIMESPEC_TO_NANOS(infer_stats->Timestamp(
+            ModelInferStats::TimestampKind::kComputeOutputStart)),
+        activity_userp_);
   }
-
-  if (hostname.empty()) {
-    return Status(
-        RequestStatusCode::INVALID_ARG,
-        "trace configuration requires a non-empty host name");
-  }
-
-  if (port == 0) {
-    return Status(
-        RequestStatusCode::INVALID_ARG,
-        "trace configuration requires a non-zero port");
-  }
-
-  LOG_INFO << "Configured trace: " << trace_name << ", " << hostname << ":"
-           << port;
-
-  singleton_.reset(new TraceManager(trace_name, hostname, port));
-  return Status::Success;
-}
-
-TraceManager::TraceManager(
-    const std::string& trace_name, const std::string& hostname, uint32_t port)
-    : level_(0 /* disabled */), rate_(1000)
-{
-  auto transportType = cppkin::TransportType::Http;
-  auto encodingType = cppkin::EncodingType::Json;
-
-  cppkin::CppkinParams cppkin_params;
-  cppkin_params.AddParam(cppkin::ConfigTags::HOST_ADDRESS, hostname);
-  cppkin_params.AddParam(cppkin::ConfigTags::PORT, port);
-  cppkin_params.AddParam(cppkin::ConfigTags::SERVICE_NAME, trace_name);
-  cppkin_params.AddParam(cppkin::ConfigTags::SAMPLE_COUNT, 1);
-  cppkin_params.AddParam(
-      cppkin::ConfigTags::TRANSPORT_TYPE,
-      cppkin::TransportType(transportType).ToString());
-  cppkin_params.AddParam(
-      cppkin::ConfigTags::ENCODING_TYPE,
-      cppkin::EncodingType(encodingType).ToString());
-
-  cppkin::Init(cppkin_params);
-}
-
-Status
-TraceManager::SetLevel(uint32_t level, uint32_t rate)
-{
-  if (singleton_ == nullptr) {
-    return Status(
-        RequestStatusCode::UNAVAILABLE, "tracing is not yet configured");
-  }
-
-  singleton_->level_ = level;
-  singleton_->rate_ = rate;
-
-  LOG_VERBOSE(1) << "Setting trace: level " << level << ", rate " << rate;
-
-  return Status::Success;
 }
 
 }}  // namespace nvidia::inferenceserver

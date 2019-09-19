@@ -73,16 +73,6 @@ RequestTimers::Record(Kind kind)
 
 //==============================================================================
 
-Error
-TraceControlContext::Options::Create(
-    std::unique_ptr<TraceControlContext::Options>* options)
-{
-  options->reset(new TraceControlOptionsImpl());
-  return Error::Success;
-}
-
-//==============================================================================
-
 bool
 InferOptionsImpl::Flag(InferRequestHeader::Flag flag) const
 {
@@ -913,6 +903,12 @@ InferContextImpl::GetOutput(
   return Error(
       RequestStatusCode::INVALID_ARG,
       "unknown output '" + name + "' for '" + model_name_ + "'");
+}
+
+int64_t
+InferContextImpl::ByteSize(const DimsList& dims, DataType dtype) const
+{
+  return GetByteSize(dtype, dims);
 }
 
 Error

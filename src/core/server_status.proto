@@ -113,21 +113,6 @@ message SharedMemoryControlRequestStats
 }
 
 //@@
-//@@.. cpp:var:: message TraceControlRequestStats
-//@@
-//@@   Statistics collected for TraceControl requests.
-//@@
-message TraceControlRequestStats
-{
-  //@@  .. cpp:var:: StatDuration success
-  //@@
-  //@@     Total time required to handle successful trace-control
-  //@@     requests, not including HTTP or gRPC endpoint termination time.
-  //@@
-  StatDuration success = 1;
-}
-
-//@@
 //@@.. cpp:var:: message InferRequestStats
 //@@
 //@@   Statistics collected for Infer requests.
@@ -309,6 +294,41 @@ enum ServerReadyState {
   SERVER_FAILED_TO_INITIALIZE = 10;
 }
 
+//@@.. cpp:var:: message SharedMemoryRegion
+//@@
+//@@   The meta-data for the shared memory region registered in the inference
+//@@   server.
+//@@
+message SharedMemoryRegion
+{
+  //@@
+  //@@  .. cpp:var:: string name
+  //@@
+  //@@     The name for this shared memory region.
+  //@@
+  string name = 1;
+
+  //@@  .. cpp:var:: string shared_memory_key
+  //@@
+  //@@     The name of the shared memory region that holds the input data
+  //@@     (or where the output data should be written).
+  //@@
+  string shared_memory_key = 2;
+
+  //@@  .. cpp:var:: uint64 offset
+  //@@
+  //@@     The offset from the start of the shared memory region.
+  //@@     start = offset, end = offset + size;
+  //@@
+  uint64 offset = 3;
+
+  //@@  .. cpp:var:: uint64 byte_size
+  //@@
+  //@@     Size of the memory block, in bytes.
+  //@@
+  uint64 byte_size = 4;
+}
+
 //@@
 //@@.. cpp:var:: message ServerStatus
 //@@
@@ -370,10 +390,19 @@ message ServerStatus
   //@@     Statistics for SharedMemoryControl requests.
   //@@
   SharedMemoryControlRequestStats shm_control_stats = 10;
+}
 
-  //@@  .. cpp:var:: TraceControlRequestStats trace_control_stats
+//@@
+//@@.. cpp:var:: message SharedMemoryStatus
+//@@
+//@@   Shared memory status for the inference server.
+//@@
+message SharedMemoryStatus
+{
   //@@
-  //@@     Statistics for TraceControl requests.
+  //@@  .. cpp:var:: SharedMemoryRegion shared_memory_region
   //@@
-  TraceControlRequestStats trace_control_stats = 6;
+  //@@     The list of active/registered shared memory regions.
+  //@@
+  repeated SharedMemoryRegion shared_memory_region = 2;
 }

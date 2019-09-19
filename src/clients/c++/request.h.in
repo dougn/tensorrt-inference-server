@@ -653,6 +653,16 @@ class InferContext {
   /// \return Error object indicating success or failure.
   virtual Error SetRunOptions(const Options& options) = 0;
 
+  /// Get the byte size of an input or output given the shape and the datatype.
+  /// \param shape The shape of the input/output.
+  /// \param dtype The datatype of the input/output.
+  /// \return The size in bytes of this input/output. This is the size for
+  /// one instance of the input/output, not the entire size of a batched
+  /// input/output. When the byte-size is not known, for example for
+  /// non-fixed-sized types like TYPE_STRING or for inputs/outputs with
+  /// variable-size dimensions, this will return -1.
+  virtual int64_t ByteSize(const DimsList& shape, DataType dtype) const = 0;
+
   /// Get the current statistics of the InferContext.
   /// \param stat Returns the Stat object holding the statistics.
   /// \return Error object indicating success or failure.
@@ -806,81 +816,6 @@ class SharedMemoryControlContext {
   /// Unregisters all registered shared memory regions on the inference server.
   /// \return Error object indicating success or failure.
   virtual Error UnregisterAllSharedMemory() = 0;
-};
-
-//==============================================================================
-/// A TraceControlContext object is used to control trace generation.
-///
-/// A TraceControlContext object can use either HTTP protocol or GRPC
-/// protocol depending on the Create function
-/// (TraceControlHttpContext::Create or
-/// TraceControlGrpcContext::Create). For example:
-///
-/// \code
-///   std::unique_ptr<TraceControlContext> ctx;
-///   TraceControlGrpcContext::Create(&ctx, "localhost:8000");
-///   std::unique_ptr<TraceControlContext::Options> options;
-///   TraceControlContext::Options::Create(&options);
-///   options->SetTraceName("TRTIS");
-///   options->SetTraceHost("traceserver");
-///   options->SetTracePort(9411);
-///   ctx->Configure(*options);
-///   ...
-///   ctx->SetLevel(1, 1000);
-///   ...
-///   ctx->SetLevel(0, 0);
-///   ...
-/// \endcode
-///
-class TraceControlContext {
- public:
-  class Options {
-   public:
-    virtual ~Options() = 0;
-
-    /// Create a new Options object with default values.
-    /// \return Error object indicating success or failure.
-    static Error Create(std::unique_ptr<Options>* options);
-
-    /// Get the descriptive name for the trace.
-    virtual const std::string& TraceName() const = 0;
-
-    /// Set the descriptive name for the trace.
-    /// \param name The descriptive name.
-    virtual void SetTraceName(const std::string& name) = 0;
-
-    /// Get the trace server hostname.
-    virtual const std::string& TraceHost() const = 0;
-
-    /// Set the trace server hostname.
-    /// \param host The hostname.
-    virtual void SetTraceHost(const std::string& host) = 0;
-
-    /// Get the trace server port.
-    virtual uint32_t TracePort() const = 0;
-
-    /// Set the trace server port.
-    /// \param port The port.
-    virtual void SetTracePort(uint32_t port) = 0;
-  };
-
-  virtual ~TraceControlContext() = 0;
-
-  /// Configure tracing. Tracing can only be configured once for a
-  /// given inference server. Configuring the trace does not enable
-  /// trace collection.
-  /// \param options The options to use for configuration.
-  /// \return Error object indicating success or failure.
-  virtual Error Configure(const Options& options) = 0;
-
-  /// Set the tracing level.
-  /// \param level The tracing level. (0) Disable tracing, (1) Minimal
-  /// tracing, trace only overall request, queue and compute, (2) Full
-  /// tracing, minimal tracing plus details.
-  /// \param rate Set the trace rate, only meaningful when enabling
-  /// trace.
-  /// \return Error object indicating success or failure.
-  virtual Error SetLevel(uint32_t level, uint32_t rate) = 0;
 };
 
 //==============================================================================
