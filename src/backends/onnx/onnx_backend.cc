@@ -43,6 +43,10 @@
 #include <tensorrt_provider_factory.h>
 #endif  // TRTIS_ENABLE_GPU
 
+#ifdef TRTIS_ENABLE_ONNXRUNTIME_OPENVINO
+#include <openvino_provider_factory.h>
+#endif  // TRTIS_ENABLE_ONNXRUNTIME_OPENVINO
+
 namespace nvidia { namespace inferenceserver {
 
 OnnxBackend::Context::Context(
@@ -218,13 +222,26 @@ OnnxBackend::CreateExecutionContext(
                .execution_accelerators()
                .gpu_execution_accelerator()) {
         if (execution_accelerator == kTensorRTExecutionAccelerator) {
-          RETURN_IF_ORT_ERROR(OrtSessionOptionsAppendExecutionProvider_Tensorrt(
-              session_options, gpu_device));
-          LOG_VERBOSE(1) << "TensorRT Execution Accelerator is set for "
-                         << instance_name << " on device " << gpu_device;
+          if (gpu_device == 0) {
+            RETURN_IF_ORT_ERROR(
+                OrtSessionOptionsAppendExecutionProvider_Tensorrt(
+                    session_options, gpu_device));
+            LOG_VERBOSE(1) << "TensorRT Execution Accelerator is set for "
+                           << instance_name << " on device " << gpu_device;
+          } else {
+            // [DLIS-729] For TensorRT, only deploy it on gpu 0 as deploying on
+            // other devices will cause segfault
+            // https://github.com/microsoft/onnxruntime/issues/1881
+            return Status(
+                RequestStatusCode::INVALID_ARG,
+                "Setting TensorRT Execution Accelerator for device other than "
+                "device 0 is not supported");
+          }
         } else {
-          LOG_ERROR << "Ignore unknown Execution Accelerator '"
-                    << execution_accelerator << "' for " << instance_name;
+          return Status(
+              RequestStatusCode::INVALID_ARG,
+              "unknown Execution Accelerator '" + execution_accelerator +
+                  "' is requested");
         }
       }
     }
@@ -237,22 +254,41 @@ OnnxBackend::CreateExecutionContext(
 #endif  // TRTIS_ENABLE_GPU
   }
 
+  bool need_lock = false;
   if (Config().optimization().has_execution_accelerators()) {
     for (const auto& execution_accelerator : Config()
                                                  .optimization()
                                                  .execution_accelerators()
                                                  .cpu_execution_accelerator()) {
       if (execution_accelerator == kOpenVINOExecutionAccelerator) {
-        LOG_ERROR << "OpenVINO Execution Accelerator is not supported for "
-                  << instance_name;
+#ifdef TRTIS_ENABLE_ONNXRUNTIME_OPENVINO
+        need_lock = true;
+        RETURN_IF_ORT_ERROR(OrtSessionOptionsAppendExecutionProvider_OpenVINO(
+            session_options, "CPU"));
+        LOG_VERBOSE(1) << "OpenVINO Execution Accelerator is set for "
+                       << instance_name << " on device CPU";
+#else
+        return Status(
+            RequestStatusCode::INVALID_ARG,
+            "OpenVINO Execution Accelerator is not enabled");
+#endif  // TRTIS_ENABLE_ONNXRUNTIME_OPENVINO
       } else {
-        LOG_ERROR << "Ignore unknown Execution Accelerator '"
-                  << execution_accelerator << "' for " << instance_name;
+        return Status(
+            RequestStatusCode::INVALID_ARG, "unknown Execution Accelerator '" +
+                                                execution_accelerator +
+                                                "' is requested");
       }
     }
   }
 
-  // Create Onnx session
+  // ONNX session creation with OpenVINO is not thread-safe,
+  // so multiple creations are serialized with a global lock.
+  static std::mutex global_context_mu;
+  std::unique_lock<std::mutex> glock(global_context_mu, std::defer_lock);
+  if (need_lock) {
+    glock.lock();
+  }
+
   RETURN_IF_ERROR(OnnxLoader::LoadSession(
       op_itr->second, session_options, &context->session_));
   RETURN_IF_ORT_ERROR(OrtGetAllocatorWithDefaultOptions(&context->allocator_));
