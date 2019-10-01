@@ -102,6 +102,7 @@ add_library(
   $<TARGET_OBJECTS:proto-library>
   $<TARGET_OBJECTS:request-library>
 )
+if(NOT APPLE)
 set_target_properties(
   request
   PROPERTIES LINK_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/librequest.ldscript
@@ -110,6 +111,7 @@ set_target_properties(
   request
   PROPERTIES LINK_FLAGS "-Wl,--version-script=librequest.ldscript"
 )
+endif()
 target_link_libraries(
   request
   PRIVATE gRPC::grpc++

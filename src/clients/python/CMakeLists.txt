@@ -46,7 +46,7 @@ endif()
 add_library(cshm SHARED shared_memory/shared_memory.cc)
 target_link_libraries(
   cshm
-  ${rt}
+  ${RT}
 )
 endif()
 

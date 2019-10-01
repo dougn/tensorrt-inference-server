@@ -61,7 +61,7 @@ function main() {
   elif [ $(uname -s) == "Darwin" ]; then
     cp libcrequest.dylib \
       "${WHLDIR}/tensorrtserver/api/."
-    cp ../c++/librequest.dylib \
+    cp ../c++/library/librequest.dylib \
       "${WHLDIR}/tensorrtserver/api/."
   else
     cp Release/crequest.dll \

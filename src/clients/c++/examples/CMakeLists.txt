@@ -42,11 +42,13 @@ if(WIN32)
 		      "are UNIX specific.")
 else()
 # Install cmake files that builds the samples within the client install.
+if(NOT APPLE) # for now, not sure WHICH cmake file this is supposed to be...
 install(
   FILES
     ${CMAKE_BINARY_DIR}/../CMakeLists.txt
   DESTINATION src/cmake
 )
+endif()
 install(
   FILES
     CMakeLists.example
@@ -117,6 +119,10 @@ install(
   DESTINATION src
 )
 
+if(NOT APPLE)
+set(RT rt)
+endif()
+
 #
 # simple_shm_client
 #
@@ -124,7 +130,7 @@ add_executable(simple_shm_client simple_shm_client.cc)
 target_link_libraries(
   simple_shm_client
   PRIVATE request_static
-  rt
+  ${RT}
 )
 install(
   TARGETS simple_shm_client
