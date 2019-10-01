@@ -157,6 +157,23 @@ ExternalProject_Add(grpc
 )
 
 #
+# Build libcurl
+#
+ExternalProject_Add(curl
+  PREFIX curl
+  GIT_REPOSITORY "https://github.com/curl/curl.git"
+  GIT_TAG "curl-7_66_0"
+  SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/curl/src/curl"
+  CMAKE_CACHE_ARGS
+    -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
+    -DBUILD_CURL_EXE:BOOL=OFF
+    -DBUILD_SHARED_LIBS:BOOL=OFF
+    -DHTTP_ONLY:BOOL=ON
+    -DCMAKE_BUILD_TYPE:BOOL=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/curl/install
+)
+
+#
 # Build libevent
 #
 ExternalProject_Add(libevent
@@ -180,9 +197,14 @@ ExternalProject_Add(libevhtp
   URL "https://github.com/criticalstack/libevhtp/archive/1.2.18.zip"
   URL_HASH SHA256=3194dc6eb4e8d6aa1e7dd3dc60bfbe066f38f9a0b5881463f0e149badd82a7bb
   PATCH_COMMAND sed -i "s/LibEvent/Libevent/g" ${CMAKE_CURRENT_BINARY_DIR}/libevhtp/src/libevhtp/CMakeLists.txt
+  COMMAND patch -i ${CMAKE_SOURCE_DIR}/libevhtp/evhtp.c.patch ${CMAKE_CURRENT_BINARY_DIR}/libevhtp/src/libevhtp/evhtp.c
+  COMMAND patch -i ${CMAKE_SOURCE_DIR}/libevhtp/evhtp.h.patch ${CMAKE_CURRENT_BINARY_DIR}/libevhtp/src/libevhtp/include/evhtp/evhtp.h
+  COMMAND patch -i ${CMAKE_SOURCE_DIR}/libevhtp/config.h.in.patch ${CMAKE_CURRENT_BINARY_DIR}/libevhtp/src/libevhtp/include/evhtp/config.h.in
   SOURCE_DIR "${CMAKE_CURRENT_BINARY_DIR}/libevhtp/src/libevhtp"
   CMAKE_CACHE_ARGS
     -DEVHTP_DISABLE_SSL:BOOL=ON
+    -DEVHTP_TRTIS_ENABLE_HTTP_CONTIGUOUS:BOOL=ON
+    -DEVHTP_TRTIS_ENABLE_TRACING:BOOL=${TRTIS_ENABLE_TRACING}
     -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
     -DLibevent_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/libevent/install/lib/cmake/libevent
     -DCMAKE_BUILD_TYPE:BOOL=${CMAKE_BUILD_TYPE}
@@ -330,6 +352,7 @@ ExternalProject_Add(trtis-clients
   BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/trtis-clients"
   BUILD_ALWAYS 1
   CMAKE_CACHE_ARGS
+    -DCURL_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/curl/install/lib/cmake/CURL
     -DProtobuf_DIR:PATH=${_FINDPACKAGE_PROTOBUF_CONFIG_DIR}
     -Dc-ares_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/c-ares/lib/cmake/c-ares
     ${_CMAKE_ARGS_OPENSSL_ROOT_DIR}
@@ -337,7 +360,7 @@ ExternalProject_Add(trtis-clients
     -DTRTIS_ENABLE_METRICS:BOOL=OFF
     -DCMAKE_BUILD_TYPE:BOOL=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX:PATH=${TRTIS_CLIENTS_INSTALL_PREFIX}
-  DEPENDS protobuf grpc
+  DEPENDS curl protobuf grpc
 )
 
 #

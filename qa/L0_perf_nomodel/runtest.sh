@@ -102,7 +102,7 @@ for BACKEND in $BACKENDS; do
     KIND="KIND_GPU" && [ $BACKEND == "custom" ] && KIND="KIND_CPU"
 
     rm -fr models && mkdir -p models && \
-        cp -r $REPO_DIR/$MODEL_NAME models/.
+        cp -r $REPO_DIR/$MODEL_NAME models/. && \
         (cd models/$MODEL_NAME && \
                 sed -i "s/^max_batch_size:.*/max_batch_size: ${MAX_BATCH}/" config.pbtxt && \
                 sed -i "s/dims:.*\[.*\]/dims: \[ ${SHAPE} \]/g" config.pbtxt && \
